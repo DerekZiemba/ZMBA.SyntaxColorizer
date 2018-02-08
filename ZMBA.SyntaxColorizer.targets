@@ -1,0 +1,34 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType> 
+    <RootNamespace>ZMBA.SyntaxColorizer.$(VSVersion)</RootNamespace>
+    <AssemblyName>ZMBA.SyntaxColorizer.$(VSVersion)</AssemblyName>
+	 <ReferencePath>$(VSPath);$(VSPath)PrivateAssemblies\;$(VSPath)PublicAssemblies\;$(VSPath)CommonExtensions\Microsoft\Editor\;$(VSPath)CommonExtensions\Microsoft\ManagedLanguages\VBCSharp\LanguageServices\</ReferencePath>
+  </PropertyGroup>
+	<PropertyGroup>
+    <StartAction>Program</StartAction>
+    <StartProgram Condition="'$(VSPath)' != ''">$(VSPath)devenv.exe</StartProgram>
+    <StartArguments>/rootsuffix Exp</StartArguments>
+  </PropertyGroup> 
+  
+  <PropertyGroup>
+    <GeneratePkgDefFile>false</GeneratePkgDefFile>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>true</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>	 
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+  </PropertyGroup>
+    
+  
+  <Import Project="ZMBA.SyntaxColorizer\ZMBA.SyntaxColorizer.projitems" Label="Shared" />
+  
+	<PropertyGroup>
+	 <ZMBAOutputRoot>..\builds</ZMBAOutputRoot>
+	</PropertyGroup>
+	<Target Name="AfterBuild">
+		<!-- <Copy SourceFiles="$(ProjectDir)Controllers.xml" DestinationFolder="$(TargetDir)" ContinueOnError="true" /> -->
+	</Target>
+	
+</Project>
