@@ -5,7 +5,12 @@
     <RootNamespace>ZMBA.SyntaxColorizer.$(VSVersion)</RootNamespace>
     <AssemblyName>ZMBA.SyntaxColorizer.$(VSVersion)</AssemblyName>
 	 <ReferencePath>$(VSPath);$(VSPath)PrivateAssemblies\;$(VSPath)PublicAssemblies\;$(VSPath)CommonExtensions\Microsoft\Editor\;$(VSPath)CommonExtensions\Microsoft\ManagedLanguages\VBCSharp\LanguageServices\</ReferencePath>
+	<AppDesignerFolder>Properties</AppDesignerFolder>
+	<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects> 
+	<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+	<TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
   </PropertyGroup>
+  
 	<PropertyGroup>
     <StartAction>Program</StartAction>
     <StartProgram Condition="'$(VSPath)' != ''">$(VSPath)devenv.exe</StartProgram>
@@ -20,8 +25,31 @@
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
   </PropertyGroup>
-    
-  
+ 
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<OutputPath>bin\Debug\</OutputPath>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<OutputPath>bin\Release\</OutputPath>
+	</PropertyGroup>
+	
+ 	<ItemGroup>
+		<Reference Include="WindowsBase" />
+		<Reference Include="Microsoft.CSharp" />
+		<Reference Include="PresentationCore" />
+		<Reference Include="PresentationFramework" />
+		<Reference Include="System" />	
+		<Reference Include="System.Core" />
+		<Reference Include="System.ComponentModel.Composition" />
+		<Reference Include="System.Data" />
+		<Reference Include="System.Data.DataSetExtensions" />
+		<Reference Include="System.Management" />
+		<Reference Include="System.Numerics" />				
+		<Reference Include="System.Xaml" />
+		<Reference Include="System.Xml" />
+		<Reference Include="System.Xml.Linq" />
+	</ItemGroup>
+	
   <Import Project="ZMBA.SyntaxColorizer\ZMBA.SyntaxColorizer.projitems" Label="Shared" />
   
 	<PropertyGroup>

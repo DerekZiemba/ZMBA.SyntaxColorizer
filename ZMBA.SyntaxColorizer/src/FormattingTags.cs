@@ -41,15 +41,19 @@ namespace ZMBA.SyntaxColorizer {
 		internal ClassificationTag Method{ get; }
 		internal ClassificationTag MethodConstructor{ get; }
 		internal ClassificationTag MethodStatic{ get; }
-		internal ClassificationTag MethodExtension{ get; }
+      internal ClassificationTag MethodVirtual { get; }
+      internal ClassificationTag MethodExtension{ get; }
+      internal ClassificationTag MethodUserDefinedOperator { get; }
+      internal ClassificationTag MethodInterfaceImplementation { get; }
 
-		internal ClassificationTag Identifier{ get; }
+      internal ClassificationTag Identifier{ get; }
 		internal ClassificationTag IdentifierNamespace{ get; }
 		internal ClassificationTag IdentifierAttribute{ get; }
 		internal ClassificationTag IdentifierConst{ get; }
 		internal ClassificationTag IdentifierField{ get; }
 		internal ClassificationTag IdentifierProperty{ get; }
-		internal ClassificationTag IdentifierEvent { get; }
+      internal ClassificationTag IdentifierPropertyInterfaceImplementation { get; }
+      internal ClassificationTag IdentifierEvent { get; }
 		internal ClassificationTag IdentifierLabel { get; }
 
 		internal FormattingTags(IClassificationTypeRegistryService registry) {
@@ -88,15 +92,19 @@ namespace ZMBA.SyntaxColorizer {
 			this.Method = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Method.Key));
 			this.MethodConstructor = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Method.Constructor.Key));
 			this.MethodStatic = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Method.Static.Key));
-			this.MethodExtension = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Method.Extension.Key));
+         this.MethodVirtual = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Method.Virtual.Key));
+         this.MethodExtension = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Method.Extension.Key));
+         this.MethodUserDefinedOperator = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Method.UserDefinedOperator.Key));
+         this.MethodInterfaceImplementation = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Method.InterfaceImplementation.Key));
 
-			this.Identifier = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Identifier.Key));
+         this.Identifier = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Identifier.Key));
 			this.IdentifierNamespace = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Identifier.Namespace.Key));
 			this.IdentifierAttribute = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Identifier.Attribute.Key));
 			this.IdentifierConst = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Identifier.Constant.Key));
 			this.IdentifierField = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Identifier.Field.Key));
 			this.IdentifierProperty = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Identifier.Property.Key));
-			this.IdentifierEvent = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Identifier.Event.Key));
+         this.IdentifierPropertyInterfaceImplementation = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Identifier.Property.InterfaceImplementation.Key));
+         this.IdentifierEvent = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Identifier.Event.Key));
 			this.IdentifierLabel = new ClassificationTag(registry.GetClassificationType(FormatDefinitions.Identifier.Label.Key));
 		}
 	}

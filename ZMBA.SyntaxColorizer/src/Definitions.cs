@@ -612,8 +612,26 @@ namespace ZMBA.SyntaxColorizer {
 				}
 			}
 
+         [Export(typeof(EditorFormatDefinition))]
+         [UserVisible(true)]
+         [Order(After = Priority.High)]
+         [ClassificationType(ClassificationTypeNames = Key)]
+         [Name(Key)]
+         internal sealed class Virtual : Method {
+            public new const string Key = "ZMBA.method-virtual";
 
-			[Export(typeof(EditorFormatDefinition))]
+            [Export(typeof(ClassificationTypeDefinition))]
+            [Name(Key)]
+            public new static ClassificationTypeDefinition TypeDef;
+            public new static ZMBAFormatDefinition Instance { get; private set; }
+
+            public Virtual() : base(Key) {
+               Instance = this;
+               IsItalic = true;
+            }
+         }
+
+         [Export(typeof(EditorFormatDefinition))]
 			[UserVisible(true)]
 			[Order(After = Priority.High)]
 			[ClassificationType(ClassificationTypeNames = Key)]
@@ -629,10 +647,49 @@ namespace ZMBA.SyntaxColorizer {
 				public Extension() : base(Key) {
 					Instance = this;
 					IsItalic = true;
-				}
+               ForegroundColor = Color.FromArgb(255, 148, 255, 255);
+            }
 			}
 
-		}
+         [Export(typeof(EditorFormatDefinition))]
+         [UserVisible(true)]
+         [Order(After = Priority.High)]
+         [ClassificationType(ClassificationTypeNames = Key)]
+         [Name(Key)]
+         internal sealed class UserDefinedOperator : Method {
+            public new const string Key = "ZMBA.method-userdefinedoperator";
+
+            [Export(typeof(ClassificationTypeDefinition))]
+            [Name(Key)]
+            public new static ClassificationTypeDefinition TypeDef;
+            public new static ZMBAFormatDefinition Instance { get; private set; }
+
+            public UserDefinedOperator() : base(Key) {
+               Instance = this;
+               ForegroundColor = Color.FromArgb(255, 0, 240, 240);
+            }
+         }
+
+         [Export(typeof(EditorFormatDefinition))]
+         [UserVisible(true)]
+         [Order(After = Priority.High)]
+         [ClassificationType(ClassificationTypeNames = Key)]
+         [Name(Key)]
+         internal sealed class InterfaceImplementation : Method {
+            public new const string Key = "ZMBA.method-interfaceimplementation";
+
+            [Export(typeof(ClassificationTypeDefinition))]
+            [Name(Key)]
+            public new static ClassificationTypeDefinition TypeDef;
+            public new static ZMBAFormatDefinition Instance { get; private set; }
+
+            public InterfaceImplementation() : base(Key) {
+               Instance = this;
+               IsUnderlined = true;
+            }
+         }
+
+      }
 
 
 
@@ -748,18 +805,38 @@ namespace ZMBA.SyntaxColorizer {
 			[Order(After = Priority.High)]
 			[ClassificationType(ClassificationTypeNames = Key)]
 			[Name(Key)]
-			internal sealed class Property : Identifier {
+			internal class Property : Identifier {
 				public new const string Key = "ZMBA.identifier-property";
 
 				[Export(typeof(ClassificationTypeDefinition))]
 				[Name(Key)]
 				public new static ClassificationTypeDefinition TypeDef;
 				public new static ZMBAFormatDefinition Instance { get; private set; }
-				public Property() : base(Key) {
+            private Property(string id) : base(id) {
+               ForegroundColor = Color.FromRgb(205, 237, 254);
+            }
+            public Property() : this(Key) {
 					Instance = this;
-					ForegroundColor = Color.FromRgb(205, 237, 254);
 				}
-			}
+
+            [Export(typeof(EditorFormatDefinition))]
+            [UserVisible(true)]
+            [Order(After = Priority.High)]
+            [ClassificationType(ClassificationTypeNames = Key)]
+            [Name(Key)]
+            internal sealed class InterfaceImplementation : Property {
+               public new const string Key = "ZMBA.identifier-property-interfaceimplementation";
+
+               [Export(typeof(ClassificationTypeDefinition))]
+               [Name(Key)]
+               public new static ClassificationTypeDefinition TypeDef;
+               public new static ZMBAFormatDefinition Instance { get; private set; }
+               public InterfaceImplementation() : base(Key) {
+                  Instance = this;
+                  IsUnderlined = true;
+               }
+            }
+         }
 
 
 			[Export(typeof(EditorFormatDefinition))]

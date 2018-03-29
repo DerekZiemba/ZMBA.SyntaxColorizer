@@ -38,6 +38,7 @@ namespace ZMBA.SyntaxColorizer {
 			SourceTextContainer srcTextContainer = buffer.AsTextContainer();
 			WorkspaceRegistration workRegistration = Workspace.GetWorkspaceRegistration(srcTextContainer);
 			Workspace workspace = workRegistration.Workspace;
+			if(workspace == null) { return null; }
 			DocumentId docid = workspace.GetDocumentIdInCurrentContext(srcTextContainer);
 			Solution sol = workspace.CurrentSolution.WithDocumentText(docid, srcTextContainer.CurrentText, PreservationMode.PreserveIdentity);
 			Document doc = sol.GetDocument(docid);
