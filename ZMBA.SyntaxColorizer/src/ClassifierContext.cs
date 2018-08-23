@@ -22,55 +22,68 @@ using CSKind = Microsoft.CodeAnalysis.CSharp.SyntaxKind;
 namespace ZMBA.SyntaxColorizer {
 
 	internal class ClassifierContext {
-		internal ITextSnapshot SnapShot { get; set; }
-		internal Workspace Workspace { get; set; }
-		internal SyntaxTree SyntaxTree { get; set; }
-		internal SyntaxNode RootNode { get; set; }
-		internal SemanticModel SemanticModel { get; set; }
-		internal TagSpan<ClassificationTag> TaggedText { get; set; }
+		internal ITextSnapshot SnapShot;
+		internal Workspace Workspace;
+		internal SyntaxTree SyntaxTree;
+		internal SyntaxNode RootNode;
+		internal SemanticModel SemanticModel;
+		internal List<TagSpan<ClassificationTag>> Classified = new List<TagSpan<ClassificationTag>>(64);
 
 		internal static ClassifierContext GetContext(ref ClassifierContext cached, SnapshotSpan snapspan) {
 			ITextSnapshot txtsnapshot = snapspan.Snapshot;
-			if (txtsnapshot == null) { return null; }
-			if (cached != null && cached.SnapShot == txtsnapshot) { return cached; }
+			if(txtsnapshot != null) {
+				ClassifierContext ctx = cached;
+				if(ctx != null && ctx.SnapShot == txtsnapshot) {
+					ctx.Classified.Clear();
+					return ctx;
+				} else {
+					SourceTextContainer srcTextContainer = txtsnapshot.TextBuffer.AsTextContainer();
+					Workspace workspace = Workspace.GetWorkspaceRegistration(srcTextContainer).Workspace;
+					if(workspace == null) { return null; }
+					DocumentId docid = workspace.GetDocumentIdInCurrentContext(srcTextContainer);
+					Document doc = workspace.CurrentSolution.WithDocumentText(docid, srcTextContainer.CurrentText, PreservationMode.PreserveIdentity).GetDocument(docid);
 
-			ITextBuffer buffer = txtsnapshot.TextBuffer;
-			SourceTextContainer srcTextContainer = buffer.AsTextContainer();
-			WorkspaceRegistration workRegistration = Workspace.GetWorkspaceRegistration(srcTextContainer);
-			Workspace workspace = workRegistration.Workspace;
-			if(workspace == null) { return null; }
-			DocumentId docid = workspace.GetDocumentIdInCurrentContext(srcTextContainer);
-			Solution sol = workspace.CurrentSolution.WithDocumentText(docid, srcTextContainer.CurrentText, PreservationMode.PreserveIdentity);
-			Document doc = sol.GetDocument(docid);
+					if(doc.SupportsSyntaxTree && doc.SupportsSemanticModel) {
+						ctx = new ClassifierContext();
+						ctx.SnapShot = txtsnapshot;
+						ctx.Workspace = workspace;
+						Task<SyntaxTree> syntaxTreeTask = null;
+						Task<SyntaxNode> rootNodeTask = null;
+						Task<SemanticModel> semanticModelTask = null;
 
-			if (doc.SupportsSyntaxTree && doc.SupportsSemanticModel) {
-				ClassifierContext ctx = AsyncGetNewContextHelper().ConfigureAwait(false).GetAwaiter().GetResult();
-				Interlocked.Exchange(ref cached, ctx);
-				return ctx;
-			} else {
-				return null;
+						if(!doc.TryGetSyntaxTree(out ctx.SyntaxTree)) {
+							syntaxTreeTask = doc.GetSyntaxTreeAsync();
+						}
+						if(syntaxTreeTask != null) {
+							ctx.SyntaxTree = syntaxTreeTask.ConfigureAwait(false).GetAwaiter().GetResult();
+						}
+						if(!ctx.SyntaxTree.TryGetRoot(out ctx.RootNode)) {
+							rootNodeTask = ctx.SyntaxTree.GetRootAsync();
+						}
+						if(!doc.TryGetSemanticModel(out ctx.SemanticModel)) {
+							semanticModelTask = doc.GetSemanticModelAsync();
+						}
+						if(rootNodeTask != null) {
+							ctx.RootNode = rootNodeTask.ConfigureAwait(false).GetAwaiter().GetResult();
+						}
+						if(semanticModelTask != null) {
+							ctx.SemanticModel = semanticModelTask.ConfigureAwait(false).GetAwaiter().GetResult();
+						}
+						Interlocked.Exchange(ref cached, ctx);
+						return ctx;
+					}
+				}
 			}
-			async Task<ClassifierContext> AsyncGetNewContextHelper() {
-				ClassifierContext ctx = new ClassifierContext();
-				ctx.SnapShot = txtsnapshot;
-				ctx.Workspace = workspace;
-				ctx.SyntaxTree = await doc.GetSyntaxTreeAsync().ConfigureAwait(false);
-				ConfiguredTaskAwaitable<SyntaxNode> rootNodeTask = ctx.SyntaxTree.GetRootAsync().ConfigureAwait(false);
-				ConfiguredTaskAwaitable<SemanticModel> semanticModelTask = doc.GetSemanticModelAsync().ConfigureAwait(false);
-				ctx.RootNode = await rootNodeTask;
-				ctx.SemanticModel = await semanticModelTask;
-				return ctx;
-			}
+			return null;
 		}
 
 		internal List<ClassifiedSpan> GetClassifiedSpans(SnapshotSpan snapspan) {
-			IEnumerable<ClassifiedSpan> result = Classifier.GetClassifiedSpans(this.SemanticModel, new TextSpan(snapspan.Start, snapspan.Length), this.Workspace);
-			return (List<ClassifiedSpan>)result;
+			return (List<ClassifiedSpan>)Classifier.GetClassifiedSpans(this.SemanticModel, new TextSpan(snapspan.Start, snapspan.Length), this.Workspace);
 		}
 
 		/** In the future might want to tag a several sub spans, so this can be modified to a enqueue spans. **/
 		internal void AssociateTagWithText(ClassificationTag tag, TextSpan text) {
-			TaggedText = new TagSpan<ClassificationTag>(new SnapshotSpan(this.SnapShot, text.Start, text.Length), tag);
+			Classified.Add(new TagSpan<ClassificationTag>(new SnapshotSpan(this.SnapShot, text.Start, text.Length), tag));
 		}
 
 	}

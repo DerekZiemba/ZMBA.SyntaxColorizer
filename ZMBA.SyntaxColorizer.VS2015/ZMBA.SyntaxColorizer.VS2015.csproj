@@ -6,6 +6,7 @@
     <ProjectGuid>{E04EE368-B501-4EC3-9E74-3AA3977B2D69}</ProjectGuid>
     <VSVersion>VS2015</VSVersion>
     <VSPath>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\</VSPath>
+	 <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project="..\ZMBA.SyntaxColorizer.targets" />
   <ItemGroup>

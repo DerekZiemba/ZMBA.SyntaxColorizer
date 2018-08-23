@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)src\ClassifierContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\Definitions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Exceptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\FormattingTags.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\VBCSTagClassifier.cs" />

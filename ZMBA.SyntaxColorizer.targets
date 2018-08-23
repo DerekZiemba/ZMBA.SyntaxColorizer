@@ -7,8 +7,7 @@
 	 <ReferencePath>$(VSPath);$(VSPath)PrivateAssemblies\;$(VSPath)PublicAssemblies\;$(VSPath)CommonExtensions\Microsoft\Editor\;$(VSPath)CommonExtensions\Microsoft\ManagedLanguages\VBCSharp\LanguageServices\</ReferencePath>
 	<AppDesignerFolder>Properties</AppDesignerFolder>
 	<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects> 
-	<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-	<TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+	<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>	
   </PropertyGroup>
   
 	<PropertyGroup>
@@ -24,6 +23,14 @@
     <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>	 
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+	 
+	 <!-- <GeneratePkgDefFile>false</GeneratePkgDefFile> -->
+	 <!-- <IncludeAssemblyInVSIXContainer>false</IncludeAssemblyInVSIXContainer> -->
+    <!-- <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer> -->
+    <!-- <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment> -->
+    <!-- <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory> -->
+    <!-- <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory> -->
+	 
   </PropertyGroup>
  
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
