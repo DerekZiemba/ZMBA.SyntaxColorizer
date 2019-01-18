@@ -43,7 +43,7 @@ namespace ZMBA.SyntaxColorizer {
 
 		private readonly FormattingTags Tags;
 		private ClassifierContext CachedContext;
-		private static readonly List<ITagSpan<ClassificationTag>> EmptyTagSpansList = new List<ITagSpan<ClassificationTag>>(0);
+		private static readonly List<TagSpan<ClassificationTag>> EmptyTagSpansList = new List<TagSpan<ClassificationTag>>(0);
 
 		internal VBCSTagClassifier(IClassificationTypeRegistryService registry, ITextBuffer buffer) {
 			this.Tags = new FormattingTags(registry);
@@ -195,67 +195,72 @@ namespace ZMBA.SyntaxColorizer {
 			}
 			ctx.AssociateTagWithText(Tags.Identifier, txt);
 		}
-		private void ClassifyIdentifier_Field(ClassifierContext ctx, TextSpan txt, SyntaxNode node, IFieldSymbol symbol) {
-			if(symbol.ContainingType.TypeKind == TypeKind.Enum) {
-				ctx.AssociateTagWithText(Tags.EnumMember, txt);
-			} else {
-				if(symbol.IsConst) {
-					ctx.AssociateTagWithText(Tags.IdentifierConst, txt);
-				} else {
-					ctx.AssociateTagWithText(Tags.IdentifierField, txt);
-				}
-			}
-		}
-		private void ClassifyIdentifier_Property(ClassifierContext ctx, TextSpan txt, SyntaxNode node, IPropertySymbol symbol) {
-			if(symbol.ImplementsInterface()) {
-				ctx.AssociateTagWithText(Tags.IdentifierPropertyInterfaceImplementation, txt);
-			} else {
-				ctx.AssociateTagWithText(Tags.IdentifierProperty, txt);
-			}
-		}
+
+    private void ClassifyIdentifier_Field<T> (ClassifierContext ctx, TextSpan txt, SyntaxNode node, T symbol) where T: IFieldSymbol {
+      if(symbol.ContainingType.TypeKind == TypeKind.Enum) {
+        ctx.AssociateTagWithText(Tags.EnumMember, txt);
+      } else {
+        if(symbol.IsConst) {
+          ctx.AssociateTagWithText(Tags.IdentifierConst, txt);
+        } else {
+          ctx.AssociateTagWithText(Tags.IdentifierField, txt);
+        }
+      }
+    }
+
+    private void ClassifyIdentifier_Property<T> (ClassifierContext ctx, TextSpan txt, SyntaxNode node, T symbol) where T: IPropertySymbol {
+      if(symbol.PropertyImplementsInterface()) {
+        ctx.AssociateTagWithText(Tags.IdentifierPropertyInterfaceImplementation, txt);
+      } else {
+        ctx.AssociateTagWithText(Tags.IdentifierProperty, txt);
+      }
+    }
 
 
-		private void ClassifyIdentifier_Method(ClassifierContext ctx, TextSpan txt, SyntaxNode node, IMethodSymbol symbol) {
-			switch(node.Parent.RawKind) {
-				case (int)VBKind.Attribute:
-				case (int)CSKind.Attribute:
-				case (int)VBKind.QualifiedName when node.Parent.Parent.RawKind == (int)VBKind.Attribute:
-				case (int)CSKind.QualifiedName when node.Parent.Parent.RawKind == (int)CSKind.Attribute:
-					ctx.AssociateTagWithText(Tags.IdentifierAttribute, txt);
-					break;
-				default:
-					if(symbol.MethodKind == MethodKind.Constructor || symbol.MethodKind == MethodKind.StaticConstructor) {
-						ctx.AssociateTagWithText(Tags.MethodConstructor, txt);
-					} else if(symbol.MethodKind == MethodKind.UserDefinedOperator) {
-						ctx.AssociateTagWithText(Tags.MethodUserDefinedOperator, txt);
-					} else if(symbol.IsExtensionMethod) {
-						ctx.AssociateTagWithText(Tags.MethodExtension, txt);
-					} else if(symbol.IsStatic) {
-						ctx.AssociateTagWithText(Tags.MethodStatic, txt);
-					} else if(symbol.IsVirtual || symbol.IsOverride) {
-						ctx.AssociateTagWithText(Tags.MethodVirtual, txt);
-					} else if(symbol.ImplementsInterface()) {
-						ctx.AssociateTagWithText(Tags.MethodInterfaceImplementation, txt);
-					} else {
-						ctx.AssociateTagWithText(Tags.Method, txt);
-					}
-					break;
-			}
-		}
-		private void ClassifyIdentifier_NamedType(ClassifierContext ctx, TextSpan txt, SyntaxNode node, INamedTypeSymbol symbol) {
-			if(symbol.SpecialType != SpecialType.None) {
-				ctx.AssociateTagWithText(Tags.Type, txt);
-			} else {
-				ctx.AssociateTagWithText(Tags.TypeClass, txt);
-			}
-		}
-		private void ClassifyIdentifier_Local(ClassifierContext ctx, TextSpan txt, SyntaxNode node, ILocalSymbol symbol) {
-			if(symbol.IsConst) {
-				ctx.AssociateTagWithText(Tags.IdentifierConst, txt);
-			} else {
-				ctx.AssociateTagWithText(Tags.Variable, txt);
-			}
-		}
+    private void ClassifyIdentifier_Method<T> (ClassifierContext ctx, TextSpan txt, SyntaxNode node, T symbol) where T: IMethodSymbol {
+      switch(node.Parent.RawKind) {
+      case (int)VBKind.Attribute:
+      case (int)CSKind.Attribute:
+      case (int)VBKind.QualifiedName when node.Parent.Parent.RawKind == (int)VBKind.Attribute:
+      case (int)CSKind.QualifiedName when node.Parent.Parent.RawKind == (int)CSKind.Attribute:
+        ctx.AssociateTagWithText(Tags.IdentifierAttribute, txt);
+        break;
+      default:
+        if(symbol.MethodKind == MethodKind.Constructor || symbol.MethodKind == MethodKind.StaticConstructor) {
+          ctx.AssociateTagWithText(Tags.MethodConstructor, txt);
+        } else if(symbol.MethodKind == MethodKind.UserDefinedOperator) {
+          ctx.AssociateTagWithText(Tags.MethodUserDefinedOperator, txt);
+        } else if(symbol.IsExtensionMethod) {
+          ctx.AssociateTagWithText(Tags.MethodExtension, txt);
+        } else if(symbol.IsStatic) {
+          ctx.AssociateTagWithText(Tags.MethodStatic, txt);
+        } else if(symbol.IsVirtual || symbol.IsOverride) {
+          ctx.AssociateTagWithText(Tags.MethodVirtual, txt);
+        } else if(symbol.MethodImplementsInterface()) {
+          ctx.AssociateTagWithText(Tags.MethodInterfaceImplementation, txt);
+        } else {
+          ctx.AssociateTagWithText(Tags.Method, txt);
+        }
+
+        break;
+      }
+    }
+
+    private void ClassifyIdentifier_NamedType<T> (ClassifierContext ctx, TextSpan txt, SyntaxNode node, T symbol) where T: INamedTypeSymbol {
+      if(symbol.SpecialType != SpecialType.None) {
+        ctx.AssociateTagWithText(Tags.Type, txt);
+      } else {
+        ctx.AssociateTagWithText(Tags.TypeClass, txt);
+      }
+    }
+
+    private void ClassifyIdentifier_Local<T> (ClassifierContext ctx, TextSpan txt, SyntaxNode node, T symbol) where T: ILocalSymbol {
+      if(symbol.IsConst) {
+        ctx.AssociateTagWithText(Tags.IdentifierConst, txt);
+      } else {
+        ctx.AssociateTagWithText(Tags.Variable, txt);
+      }
+    }
 
 
 	}
