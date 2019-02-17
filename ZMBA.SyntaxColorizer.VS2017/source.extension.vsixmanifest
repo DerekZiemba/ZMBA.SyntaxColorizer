@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="ZMBA.SyntaxColorizer.VS2017.bf85e100-5524-4544-88e9-b01a1a12609b" Version="1.0.4.2" Language="en-US" Publisher="Derek Ziemba" />
+        <Identity Id="ZMBA.SyntaxColorizer.VS2017.bf85e100-5524-4544-88e9-b01a1a12609b" Version="1.0.4.3" Language="en-US" Publisher="Derek Ziemba" />
         <DisplayName>ZMBA.SyntaxColorizer.VS2017</DisplayName>
         <Description xml:space="preserve">Style code Font and Color based on Syntax and Semantic meaning. Font Style  Font and Color based on Syntax and Semantic meaning.
 Supported languages: C#, Visual Basic, JavaScript, HTML</Description>
