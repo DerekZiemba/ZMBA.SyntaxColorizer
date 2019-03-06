@@ -36,7 +36,7 @@ namespace ZMBA.SyntaxColorizer {
 				if(ctx != null && ctx.SnapShot == txtsnapshot) {
 					ctx.Classified.Clear();
 					return ctx;
-				} else {
+				} else { 
 					SourceTextContainer srcTextContainer = txtsnapshot.TextBuffer.AsTextContainer();
 					Workspace workspace = Workspace.GetWorkspaceRegistration(srcTextContainer).Workspace;
 					if(workspace == null) { return null; }

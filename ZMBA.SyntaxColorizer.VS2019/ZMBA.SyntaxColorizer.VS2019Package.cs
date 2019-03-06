@@ -24,13 +24,13 @@ namespace ZMBA.SyntaxColorizer.VS2019
   /// </para>
   /// </remarks>
   [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-  [Guid(ZMBA.SyntaxColorizer.VS2019Package.PackageGuidString)]
-  public sealed class ZMBA.SyntaxColorizer.VS2019Package : AsyncPackage
+  [Guid(SyntaxColorizer_VS2019Package.PackageGuidString)]
+  public sealed class SyntaxColorizer_VS2019Package : AsyncPackage
     {
          /// <summary>
         /// ZMBA.SyntaxColorizer.VS2019Package GUID string.
         /// </summary>
-        public const string PackageGuidString = "1e25cef6-ed3d-4a14-9ed3-6e8cc2da634d";
+        public const string PackageGuidString = "9b2017db-7aa2-4092-9787-cd28b47160e1";
 
   #region Package Members
 
