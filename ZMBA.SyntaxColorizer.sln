@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28701.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ZMBA.SyntaxColorizer", "ZMBA.SyntaxColorizer\ZMBA.SyntaxColorizer.shproj", "{7A1FFCB8-1711-42FE-AC90-8255D2834A27}"
 EndProject
@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		ZMBA.SyntaxColorizer.targets = ZMBA.SyntaxColorizer.targets
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZMBA.SyntaxColorizer.VS2019", "ZMBA.SyntaxColorizer.VS2019\ZMBA.SyntaxColorizer.VS2019.csproj", "{46B5403E-A28C-4784-97C1-BE6E260B327A}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ZMBA.SyntaxColorizer\ZMBA.SyntaxColorizer.projitems*{0dd30895-f150-413d-a20b-b34dba7aaca1}*SharedItemsImports = 4
@@ -26,6 +28,7 @@ Global
 		Debug|Any CPU = Debug|Any CPU
 		Release(debuggable)|Any CPU = Release(debuggable)|Any CPU
 		Release|Any CPU = Release|Any CPU
+		ReleaseEmb|Any CPU = ReleaseEmb|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0DD30895-F150-413D-A20B-B34DBA7AACA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -34,12 +37,24 @@ Global
 		{0DD30895-F150-413D-A20B-B34DBA7AACA1}.Release(debuggable)|Any CPU.Build.0 = Release|Any CPU
 		{0DD30895-F150-413D-A20B-B34DBA7AACA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DD30895-F150-413D-A20B-B34DBA7AACA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DD30895-F150-413D-A20B-B34DBA7AACA1}.ReleaseEmb|Any CPU.ActiveCfg = ReleaseEmb|Any CPU
+		{0DD30895-F150-413D-A20B-B34DBA7AACA1}.ReleaseEmb|Any CPU.Build.0 = ReleaseEmb|Any CPU
 		{E04EE368-B501-4EC3-9E74-3AA3977B2D69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E04EE368-B501-4EC3-9E74-3AA3977B2D69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E04EE368-B501-4EC3-9E74-3AA3977B2D69}.Release(debuggable)|Any CPU.ActiveCfg = Release|Any CPU
 		{E04EE368-B501-4EC3-9E74-3AA3977B2D69}.Release(debuggable)|Any CPU.Build.0 = Release|Any CPU
 		{E04EE368-B501-4EC3-9E74-3AA3977B2D69}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E04EE368-B501-4EC3-9E74-3AA3977B2D69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E04EE368-B501-4EC3-9E74-3AA3977B2D69}.ReleaseEmb|Any CPU.ActiveCfg = ReleaseEmb|Any CPU
+		{E04EE368-B501-4EC3-9E74-3AA3977B2D69}.ReleaseEmb|Any CPU.Build.0 = ReleaseEmb|Any CPU
+		{46B5403E-A28C-4784-97C1-BE6E260B327A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46B5403E-A28C-4784-97C1-BE6E260B327A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46B5403E-A28C-4784-97C1-BE6E260B327A}.Release(debuggable)|Any CPU.ActiveCfg = Release|Any CPU
+		{46B5403E-A28C-4784-97C1-BE6E260B327A}.Release(debuggable)|Any CPU.Build.0 = Release|Any CPU
+		{46B5403E-A28C-4784-97C1-BE6E260B327A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46B5403E-A28C-4784-97C1-BE6E260B327A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46B5403E-A28C-4784-97C1-BE6E260B327A}.ReleaseEmb|Any CPU.ActiveCfg = Release|Any CPU
+		{46B5403E-A28C-4784-97C1-BE6E260B327A}.ReleaseEmb|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
