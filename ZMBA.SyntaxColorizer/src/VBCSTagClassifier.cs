@@ -22,19 +22,7 @@ using CSKind = Microsoft.CodeAnalysis.CSharp.SyntaxKind;
 namespace ZMBA.SyntaxColorizer {
 
 
-	[Export(typeof(ITaggerProvider))]
-	[ContentType("Basic")]
-	[ContentType("CSharp")]
-	[TagType(typeof(IClassificationTag))]
-	internal sealed class VBCSClassificationTagProvider : ITaggerProvider {
-		[Import] internal IClassificationTypeRegistryService ClassificationRegistry; // Set via MEF
 
-		public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag {
-			//Don't need to pass the buffer because we aren't doing anything too complicated. 
-			//Would need it if we had to do some intense tagging on a background thread.
-			return (ITagger<T>)buffer.Properties.GetOrCreateSingletonProperty(() => new VBCSTagClassifier(ClassificationRegistry, buffer));
-		}
-	}
 
 	internal class VBCSTagClassifier : ITagger<ClassificationTag> {
 #pragma warning disable CS0067 // The event is never used
@@ -205,7 +193,7 @@ namespace ZMBA.SyntaxColorizer {
         } else {
           ctx.AssociateTagWithText(Tags.IdentifierField, txt);
         }
-      }
+      } 
     }
 
     private void ClassifyIdentifier_Property<T> (ClassifierContext ctx, TextSpan txt, SyntaxNode node, T symbol) where T: IPropertySymbol {
