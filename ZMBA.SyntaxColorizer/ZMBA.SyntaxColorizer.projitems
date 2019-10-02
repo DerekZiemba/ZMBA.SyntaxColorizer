@@ -8,6 +8,20 @@
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>ZMBA.SyntaxColorizer</Import_RootNamespace>
   </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <DefineConstants>TRACE;RELEASE</DefineConstants>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)ZMBA.SyntaxColorizer.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)ZMBA.SyntaxColorizer.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseEmb|AnyCPU'">
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)ZMBA.SyntaxColorizer.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)ZMBA.SyntaxColorizer.ruleset" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\ClassifierContext.cs" />

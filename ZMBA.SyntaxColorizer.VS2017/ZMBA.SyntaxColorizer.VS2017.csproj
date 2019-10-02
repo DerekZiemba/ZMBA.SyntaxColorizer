@@ -12,23 +12,11 @@
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DefineConstants>TRACE;RELEASE</DefineConstants>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>ZMBA.SyntaxColorizer.VS2017.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <CodeAnalysisRuleSet>ZMBA.SyntaxColorizer.VS2017.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseEmb|AnyCPU'">
-    <CodeAnalysisRuleSet>ZMBA.SyntaxColorizer.VS2017.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
   <Import Project="..\ZMBA.SyntaxColorizer.targets" />
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
-    <None Include="ZMBA.SyntaxColorizer.VS2017.ruleset" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis">
