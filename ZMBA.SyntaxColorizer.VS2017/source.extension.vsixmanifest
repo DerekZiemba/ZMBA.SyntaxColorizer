@@ -1,31 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
-    <Metadata>
-        <Identity Id="ZMBA.SyntaxColorizer.VS2017.bf85e100-5524-4544-88e9-b01a1a12609b" Version="1.0.4.3" Language="en-US" Publisher="Derek Ziemba" />
-        <DisplayName>ZMBA.SyntaxColorizer.VS2017</DisplayName>
-        <Description xml:space="preserve">Style code Font and Color based on Syntax and Semantic meaning. Font Style  Font and Color based on Syntax and Semantic meaning.
+  <Metadata>
+    <Identity Id="ZMBA.SyntaxColorizer.VS2017.bf85e100-5524-4544-88e9-b01a1a12609b" Version="1.0.5.0" Language="en-US" Publisher="Derek Ziemba" />
+    <DisplayName>ZMBA.SyntaxColorizer.VS2017</DisplayName>
+    <Description xml:space="preserve">Style code Font and Color based on Syntax and Semantic meaning. Font Style  Font and Color based on Syntax and Semantic meaning.
 Supported languages: C#, Visual Basic, JavaScript, HTML</Description>
-    </Metadata>
-    <Installation>
-        <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.IntegratedShell" />
-        <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.Pro" />
-        <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.Enterprise" />
-        <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.VSWinExpress" />
-        <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.VWDExpress" />
-        <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.VSWinDesktopExpress" />
-        <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.Community" />
-    </Installation>
-    <Dependencies>
-        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
-        <Dependency d:Source="Installed" Id="Microsoft.VisualStudio.Editor" DisplayName="Microsoft Visual Studio Editor" Version="[15.0,16.0)" />
-        <Dependency d:Source="Installed" Id="Microsoft.VisualStudio.MPF.15.0" DisplayName="Visual Studio MPF 15.0" Version="[15.0,16.0)" />
-    </Dependencies>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.IntegratedShell" />
+    <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.Pro" />
+    <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.Enterprise" />
+    <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.VSWinExpress" />
+    <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.VWDExpress" />
+    <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.VSWinDesktopExpress" />
+    <InstallationTarget Version="[15.0, 16.0)" Id="Microsoft.VisualStudio.Community" />
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+    <!--<Dependency d:Source="Installed" Id="Microsoft.VisualStudio.Editor" DisplayName="Microsoft Visual Studio Editor" Version="[15.3.189.48598,16.0)" />-->
+    <!--<Dependency d:Source="Installed" Id="Microsoft.VisualStudio.Platform.Editor" DisplayName="Microsoft Visual Studio Editor" Version="[16.3.189.48598,16.0)" />-->
+
+    <Dependency d:Source="Installed" Id="Microsoft.VisualStudio.MPF.15.0" DisplayName="Visual Studio MPF 15.0" Version="[15.0,)" />
+    <!--<Dependency d:Source="Installed" Id="Microsoft.VisualStudio.Platform.Editor" DisplayName="Microsoft Visual Studio Platform Editor" Version="[16.3.189.48598,17.0)" />-->
+    <Dependency d:Source="Installed" Id="Microsoft.VisualStudio.ErrorListPkg" DisplayName="Microsoft Visual Studio Editor" Version="[14.0,15.0)" />
+  </Dependencies>
   <Prerequisites>
     <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" DisplayName="Visual Studio core editor" />
     <Prerequisite Id="Microsoft.VisualStudio.Component.Roslyn.Compiler" Version="[15.0,16.0)" DisplayName="C# and Visual Basic Roslyn compilers" />
-  </Prerequisites>  
-    <Assets>
-      <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-      <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
-    </Assets>
+  </Prerequisites>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+  </Assets>
 </PackageManifest>
