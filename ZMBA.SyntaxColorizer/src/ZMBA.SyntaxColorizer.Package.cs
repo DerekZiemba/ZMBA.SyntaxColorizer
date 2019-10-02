@@ -23,8 +23,8 @@ namespace ZMBA.SyntaxColorizer {
   /// </para>
   /// </remarks>
   [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-  [Guid(SyntaxColorizer_Package.PackageGuidString)]
-  public sealed class SyntaxColorizer_Package : AsyncPackage {
+  [Guid(SyntaxColorizerPackage.PackageGuidString)]
+  public sealed class SyntaxColorizerPackage : AsyncPackage {
     /// <summary>
     /// ZMBA.SyntaxColorizer.VS2019Package GUID string.
     /// </summary>

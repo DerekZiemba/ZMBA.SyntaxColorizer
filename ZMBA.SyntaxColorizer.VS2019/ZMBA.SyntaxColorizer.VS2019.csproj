@@ -43,8 +43,10 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
@@ -60,6 +62,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.EditorFeatures.Text">
       <Version>3.3.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+      <Version>2.9.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Editor">
       <Version>16.2.45</Version>
