@@ -66,7 +66,7 @@ namespace ZMBA.SyntaxColorizer {
       for(var i = 0; i < interfaces.Length; i++) {
         ImmutableArray<ISymbol> mems = interfaces[i].GetMembersByName(symbol.Name);
         for (var j = 0; j < mems.Length; j++) {
-          if(mems[j] is IMethodSymbol member && symbol.ReturnType == member.ReturnType) {
+          if(mems[j] is IMethodSymbol member && Equals(symbol.ReturnType, member.ReturnType)) {
             if(symbol.Parameters.Length == member.Parameters.Length) {
               var impl = symbol.ContainingType.FindImplementationForInterfaceMember(member);
               if(impl != null && impl.Equals(symbol)) {
@@ -87,7 +87,7 @@ namespace ZMBA.SyntaxColorizer {
       for(var i = 0; i < interfaces.Length; i++) {
         ImmutableArray<ISymbol> mems = interfaces[i].GetMembersByName(symbol.Name);
         for(var j = 0; j < mems.Length; j++) {
-          if(mems[j] is IPropertySymbol member && symbol.Type == member.Type) {
+          if(mems[j] is IPropertySymbol member && Equals(symbol.Type, member.Type)) {
             if(symbol.Parameters.Length == member.Parameters.Length) {
               var impl = symbol.ContainingType.FindImplementationForInterfaceMember(member);
               if(impl != null && impl.Equals(symbol)) {
