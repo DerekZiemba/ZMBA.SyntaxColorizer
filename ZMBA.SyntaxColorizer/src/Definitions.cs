@@ -15,7 +15,7 @@ namespace ZMBA.SyntaxColorizer {
 			[Order(After = Priority.High)]
 			[ClassificationType(ClassificationTypeNames = Key)]
 			[Name(Key)]
-			internal sealed class KeyWord : ZMBAFormatDefinition {
+			internal class KeyWord : ZMBAFormatDefinition {
 				public const string Key = "ZMBA.syntax.keyword";
 
 				[Export(typeof(ClassificationTypeDefinition))]
@@ -27,7 +27,29 @@ namespace ZMBA.SyntaxColorizer {
 					Instance = this;
 					ForegroundColor = Color.FromRgb(147, 199, 99);
 				}
-			}
+        private KeyWord(string id) : base(id) {
+          Instance = this;
+        }
+
+        [Export(typeof(EditorFormatDefinition))]
+        [UserVisible(true)]
+        [Order(After = Priority.High)]
+        [ClassificationType(ClassificationTypeNames = Key)]
+        [Name(Key)]
+        internal sealed class Control : KeyWord {
+          public new const string Key = "ZMBA.syntax.keyword-control";
+
+          [Export(typeof(ClassificationTypeDefinition))]
+          [Name(Key)]
+          public new static ClassificationTypeDefinition TypeDef;
+          public new static ZMBAFormatDefinition Instance { get; private set; }
+          public Control() : base(Key) {
+            Instance = this;
+            ForegroundColor = Color.FromRgb(216, 160, 223);
+          }
+
+        }
+      }
 
 
 			[Export(typeof(EditorFormatDefinition))]
@@ -35,7 +57,7 @@ namespace ZMBA.SyntaxColorizer {
 			[Order(After = Priority.High)]
 			[ClassificationType(ClassificationTypeNames = Key)]
 			[Name(Key)]
-			internal sealed class Operator : ZMBAFormatDefinition {
+			internal class Operator : ZMBAFormatDefinition {
 				public const string Key = "ZMBA.syntax.operator";
 
 				[Export(typeof(ClassificationTypeDefinition))]
@@ -43,11 +65,33 @@ namespace ZMBA.SyntaxColorizer {
 				public static ClassificationTypeDefinition TypeDef;
 				public static ZMBAFormatDefinition Instance { get; private set; }
 
-				public Operator() : base(Key) {
-					Instance = this;
+				public Operator() : this(Key) {
 					ForegroundColor = Color.FromRgb(255, 255, 128);
 				}
-			}
+
+        public Operator(string id) : base(id) {
+          Instance = this;
+        }
+
+        [Export(typeof(EditorFormatDefinition))]
+        [UserVisible(true)]
+        [Order(After = Priority.High)]
+        [ClassificationType(ClassificationTypeNames = Key)]
+        [Name(Key)]
+        internal class Overloaded : ZMBAFormatDefinition {
+          public const string Key = "ZMBA.syntax.operator-overloaded";
+
+          [Export(typeof(ClassificationTypeDefinition))]
+          [Name(Key)]
+          public static ClassificationTypeDefinition TypeDef;
+          public static ZMBAFormatDefinition Instance { get; private set; }
+
+          public Overloaded() : base(Key) {
+            Instance = this;
+            IsItalic = true;
+          }
+        }
+      }
 
 
 			[Export(typeof(EditorFormatDefinition))]

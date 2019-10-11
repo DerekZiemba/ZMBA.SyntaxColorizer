@@ -28,6 +28,11 @@ namespace ZMBA.SyntaxColorizer {
 
   internal static class Extensions {
 
+    internal static TagSpan<ClassificationTag> Associate(this ClassificationTag tag, ITextSnapshot snapshot, TextSpan txt) {
+      return new TagSpan<ClassificationTag>(new SnapshotSpan(snapshot, txt.Start, txt.Length), tag);
+    }
+
+    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
     private static ImmutableArray<ISymbol> GetMembersByName<T> (this T symbol, string name) where T: INamedTypeSymbol {
       if(name != null && name.Length > 1) {
         int index = name.LastIndexOf('.');
@@ -39,7 +44,7 @@ namespace ZMBA.SyntaxColorizer {
       return ImmutableArray<ISymbol>.Empty;
     }
 
-
+    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
     internal static SyntaxNode FindOuterMostNode (this SyntaxNode rootNode, TextSpan span, bool bTrivia) {
       SyntaxNode node = rootNode.FindToken(span.Start, bTrivia).Parent;
       SyntaxNode parent;
@@ -59,6 +64,7 @@ namespace ZMBA.SyntaxColorizer {
       return node;
     }
 
+    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
     internal static bool MethodImplementsInterface<T> (this T symbol) where T: IMethodSymbol {
       if(symbol.ExplicitInterfaceImplementations.Length > 0) {  return true; }
 
@@ -79,7 +85,7 @@ namespace ZMBA.SyntaxColorizer {
       return false;
     }
 
-
+    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
     internal static bool PropertyImplementsInterface<T> (this T symbol) where T: IPropertySymbol {
       if(symbol.ExplicitInterfaceImplementations.Length > 0) {  return true; }
 

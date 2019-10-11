@@ -1,91 +1,91 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Classification;
-using Microsoft.VisualStudio.Text.Tagging;
-using Microsoft.VisualStudio.Utilities;
-
-using VB = Microsoft.CodeAnalysis.VisualBasic;
-using CS = Microsoft.CodeAnalysis.CSharp;
-using VBKind = Microsoft.CodeAnalysis.VisualBasic.SyntaxKind;
-using CSKind = Microsoft.CodeAnalysis.CSharp.SyntaxKind;
 
 namespace ZMBA.SyntaxColorizer {
+  internal class ClassifierContext {
+    internal SnapshotSpan SnapSpan;
+    internal ITextSnapshot SnapShot;
+    internal Workspace Workspace;
+    internal Document Document;
+    internal SemanticModel SemanticModel;
+    internal SyntaxNode RootNode;
+    internal List<ClassifiedSpan> ClassifiedSpans;
 
-	internal class ClassifierContext {
-		internal ITextSnapshot SnapShot;
-		internal Workspace Workspace;
-		internal SyntaxTree SyntaxTree;
-		internal SyntaxNode RootNode;
-		internal SemanticModel SemanticModel;
-		internal List<TagSpan<ClassificationTag>> Classified = new List<TagSpan<ClassificationTag>>(64);
+    internal SyntaxTree SyntaxTree { get => SemanticModel.SyntaxTree; }
 
-		internal static ClassifierContext GetContext(ref ClassifierContext cached, SnapshotSpan snapspan) {
-			ITextSnapshot txtsnapshot = snapspan.Snapshot;
-			if(txtsnapshot != null) {
-				ClassifierContext ctx = cached;
-				if(ctx != null && ctx.SnapShot == txtsnapshot) {
-					ctx.Classified.Clear();
-					return ctx;
-				} else { 
-					SourceTextContainer srcTextContainer = txtsnapshot.TextBuffer.AsTextContainer();
-					Workspace workspace = Workspace.GetWorkspaceRegistration(srcTextContainer).Workspace;
-					if(workspace == null) { return null; }
-					DocumentId docid = workspace.GetDocumentIdInCurrentContext(srcTextContainer);
-					Document doc = workspace.CurrentSolution.WithDocumentText(docid, srcTextContainer.CurrentText, PreservationMode.PreserveIdentity).GetDocument(docid);
+    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
+    internal static ClassifierContext GetContext(ref SnapshotSpan snapspan) {
+      ITextSnapshot snapshot = snapspan.Snapshot;
+      CachedContext cached = CachedContext.GetCachedContext(snapshot);
+      if (cached == null) { return null; }
+      if (!cached.Doc.SupportsSyntaxTree || !cached.Doc.SupportsSemanticModel) { return null; }
 
-					if(doc.SupportsSyntaxTree && doc.SupportsSemanticModel) {
-						ctx = new ClassifierContext();
-						ctx.SnapShot = txtsnapshot;
-						ctx.Workspace = workspace;
-						Task<SyntaxTree> syntaxTreeTask = null;
-						Task<SyntaxNode> rootNodeTask = null;
-						Task<SemanticModel> semanticModelTask = null;
+      ClassifierContext ctx = new ClassifierContext(ref snapspan, cached.WS, cached.Doc);
+      if (ctx.Document.TryGetSemanticModel(out ctx.SemanticModel)) {
+        if (ctx.SyntaxTree.TryGetRoot(out ctx.RootNode)) {
+          ctx.ClassifiedSpans = ctx.GetClassifiedSpans();
+          return ctx;
+        }
+      }
 
-						if(!doc.TryGetSyntaxTree(out ctx.SyntaxTree)) {
-							syntaxTreeTask = doc.GetSyntaxTreeAsync();
-						}
-						if(syntaxTreeTask != null) {
-							ctx.SyntaxTree = syntaxTreeTask.ConfigureAwait(false).GetAwaiter().GetResult();
-						}
-						if(!ctx.SyntaxTree.TryGetRoot(out ctx.RootNode)) {
-							rootNodeTask = ctx.SyntaxTree.GetRootAsync();
-						}
-						if(!doc.TryGetSemanticModel(out ctx.SemanticModel)) {
-							semanticModelTask = doc.GetSemanticModelAsync();
-						}
-						if(rootNodeTask != null) {
-							ctx.RootNode = rootNodeTask.ConfigureAwait(false).GetAwaiter().GetResult();
-						}
-						if(semanticModelTask != null) {
-							ctx.SemanticModel = semanticModelTask.ConfigureAwait(false).GetAwaiter().GetResult();
-						}
-						Interlocked.Exchange(ref cached, ctx);
-						return ctx;
-					}
-				}
-			}
-			return null;
-		}
+      return InitAsync(ctx).ConfigureAwait(false).GetAwaiter().GetResult();
 
-		internal List<ClassifiedSpan> GetClassifiedSpans(SnapshotSpan snapspan) {
-			return (List<ClassifiedSpan>)Classifier.GetClassifiedSpans(this.SemanticModel, new TextSpan(snapspan.Start, snapspan.Length), this.Workspace);
-		}
+    }
+    private ClassifierContext(ref SnapshotSpan snapspan, Workspace ws, Document doc) {
+      this.SnapSpan = snapspan;
+      this.SnapShot = snapspan.Snapshot;
+      this.Workspace = ws;
+      this.Document = doc;
+    }
 
-		/** In the future might want to tag a several sub spans, so this can be modified to a enqueue spans. **/
-		internal void AssociateTagWithText(ClassificationTag tag, TextSpan text) {
-			Classified.Add(new TagSpan<ClassificationTag>(new SnapshotSpan(this.SnapShot, text.Start, text.Length), tag));
-		}
+    [MethodImpl(256 | 512)] //[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    private List<ClassifiedSpan> GetClassifiedSpans() {
+      return (List<ClassifiedSpan>)Classifier.GetClassifiedSpans(this.SemanticModel, new TextSpan(SnapSpan.Start, SnapSpan.Length), this.Workspace);
+    }
 
-	}
+    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
+    private static async Task<ClassifierContext> InitAsync(ClassifierContext ctx) {
+      if (ctx.SemanticModel == null) { ctx.SemanticModel = await ctx.Document.GetSemanticModelAsync().ConfigureAwait(false); }
+      if (ctx.RootNode == null) { ctx.RootNode = await ctx.SyntaxTree.GetRootAsync().ConfigureAwait(false); }
+      ctx.ClassifiedSpans = ctx.GetClassifiedSpans();
+      return ctx;
+    }
 
+
+    private class CachedContext {
+      private static readonly ConditionalWeakTable<ITextSnapshot, CachedContext> _weakTable = new ConditionalWeakTable<ITextSnapshot, CachedContext>();
+
+      internal Workspace WS;
+      internal Document Doc;
+      internal CachedContext(Workspace work_space, Document document) {
+        this.WS = work_space;
+        this.Doc = document;
+      }
+
+      [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
+      internal static CachedContext GetCachedContext(ITextSnapshot snapshot) {
+        if (_weakTable.TryGetValue(snapshot, out CachedContext ctx) && ctx != null) { return ctx; }
+
+        SourceTextContainer stc = snapshot.TextBuffer.AsTextContainer();
+        Workspace ws = Workspace.GetWorkspaceRegistration(stc).Workspace;
+        if (ws == null) { return null; }
+        DocumentId docid = ws.GetDocumentIdInCurrentContext(stc);
+        if (docid == null) { return null; }
+        Document doc = ws.CurrentSolution.WithDocumentText(docid, stc.CurrentText, PreservationMode.PreserveIdentity).GetDocument(docid);
+        if (doc == null) { return null; }
+
+        ctx = new CachedContext(ws, doc);
+        _weakTable.Add(snapshot, ctx);
+        return ctx;
+      }
+    }
+
+
+  }
 }

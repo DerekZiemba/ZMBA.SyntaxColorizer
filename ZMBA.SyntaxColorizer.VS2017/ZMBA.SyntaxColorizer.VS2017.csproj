@@ -8,6 +8,7 @@
     <VSVersion>VS2017</VSVersion>
     <VSPath>$(DevEnvDir)</VSPath>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+	<LangVersion>8.0</LangVersion>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
