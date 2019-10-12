@@ -64,6 +64,12 @@ namespace ZMBA.SyntaxColorizer {
       return node;
     }
 
+    [MethodImpl(256 | 512)] //[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    internal static ISymbol GetRawSymbol(this SemanticModel model, SyntaxNode node) {
+      return model.GetSymbolInfo(node).Symbol ?? model.GetDeclaredSymbol(node);
+    }
+
+
     [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
     internal static bool MethodImplementsInterface<T> (this T symbol) where T: IMethodSymbol {
       if(symbol.ExplicitInterfaceImplementations.Length > 0) {  return true; }

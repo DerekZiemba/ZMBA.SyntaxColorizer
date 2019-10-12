@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -8,7 +9,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 
 namespace ZMBA.SyntaxColorizer {
-  internal class ClassifierContext {
+  internal class ClassifierContext : IDisposable {
     internal SnapshotSpan SnapSpan;
     internal ITextSnapshot SnapShot;
     internal Workspace Workspace;
@@ -25,7 +26,6 @@ namespace ZMBA.SyntaxColorizer {
       CachedContext cached = CachedContext.GetCachedContext(snapshot);
       if (cached == null) { return null; }
       if (!cached.Doc.SupportsSyntaxTree || !cached.Doc.SupportsSemanticModel) { return null; }
-
       ClassifierContext ctx = new ClassifierContext(ref snapspan, cached.WS, cached.Doc);
       if (ctx.Document.TryGetSemanticModel(out ctx.SemanticModel)) {
         if (ctx.SyntaxTree.TryGetRoot(out ctx.RootNode)) {
@@ -33,9 +33,7 @@ namespace ZMBA.SyntaxColorizer {
           return ctx;
         }
       }
-
       return InitAsync(ctx).ConfigureAwait(false).GetAwaiter().GetResult();
-
     }
     private ClassifierContext(ref SnapshotSpan snapspan, Workspace ws, Document doc) {
       this.SnapSpan = snapspan;
@@ -46,7 +44,7 @@ namespace ZMBA.SyntaxColorizer {
 
     [MethodImpl(256 | 512)] //[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     private List<ClassifiedSpan> GetClassifiedSpans() {
-      return (List<ClassifiedSpan>)Classifier.GetClassifiedSpans(this.SemanticModel, new TextSpan(SnapSpan.Start, SnapSpan.Length), this.Workspace);
+       return (List<ClassifiedSpan>)Classifier.GetClassifiedSpans(this.SemanticModel, new TextSpan(SnapSpan.Start, SnapSpan.Length), this.Workspace);
     }
 
     [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
@@ -57,6 +55,26 @@ namespace ZMBA.SyntaxColorizer {
       return ctx;
     }
 
+    #region IDisposable Support
+    private bool disposedValue = false; // To detect redundant calls
+    protected virtual void Dispose(bool disposing) {
+      if (!disposedValue) {
+        if (disposing) {
+          this.SnapSpan = default;
+          this.SnapShot = null;
+          this.Workspace = null;
+          this.Document = null;
+          this.SemanticModel = null;
+          this.RootNode = null;
+        }
+        disposedValue = true;
+      }
+    }
+    // This code added to correctly implement the disposable pattern.
+    public void Dispose() {
+      Dispose(true);
+    }
+    #endregion
 
     private class CachedContext {
       private static readonly ConditionalWeakTable<ITextSnapshot, CachedContext> _weakTable = new ConditionalWeakTable<ITextSnapshot, CachedContext>();
@@ -85,7 +103,5 @@ namespace ZMBA.SyntaxColorizer {
         return ctx;
       }
     }
-
-
   }
 }
