@@ -24,12 +24,23 @@ using VBKind = Microsoft.CodeAnalysis.VisualBasic.SyntaxKind;
 using CSKind = Microsoft.CodeAnalysis.CSharp.SyntaxKind;
 
 
-namespace ZMBA.SyntaxColorizer {
+namespace ZMBA.SyntaxColorizer.Clazzifier {
 
   internal static class Extensions {
 
+    [MethodImpl(256 | 512)] //[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    internal static ClassificationTag LoadTag(this IClassificationTypeRegistryService reg, string key) {
+      return new ClassificationTag(reg.GetClassificationType(key));
+    }
+
+    [MethodImpl(256 | 512)] //[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     internal static TagSpan<ClassificationTag> Associate(this ClassificationTag tag, ITextSnapshot snapshot, TextSpan txt) {
       return new TagSpan<ClassificationTag>(new SnapshotSpan(snapshot, txt.Start, txt.Length), tag);
+    }
+
+    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
+    internal static TextSpan TextSpan(this SnapshotSpan span) {
+      return new TextSpan(span.Start, span.Length);
     }
 
     [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization

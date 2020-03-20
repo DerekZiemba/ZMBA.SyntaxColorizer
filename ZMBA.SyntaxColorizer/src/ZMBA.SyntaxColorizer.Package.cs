@@ -2,6 +2,8 @@
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio.Shell;
+using System.ComponentModel.Composition;
+using Microsoft.VisualStudio.Text.Classification;
 using Task = System.Threading.Tasks.Task;
 
 namespace ZMBA.SyntaxColorizer {
@@ -22,13 +24,16 @@ namespace ZMBA.SyntaxColorizer {
   /// To get loaded into VS, the package must be referred by &lt;Asset Type="Microsoft.VisualStudio.VsPackage" ...&gt; in .vsixmanifest file.
   /// </para>
   /// </remarks>
+  /// https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-use-asyncpackage-to-load-vspackages-in-the-background?view=vs-2019
   [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
   [Guid(SyntaxColorizerPackage.PackageGuidString)]
   public sealed class SyntaxColorizerPackage : AsyncPackage {
-    /// <summary>
-    /// ZMBA.SyntaxColorizer.VS2019Package GUID string.
-    /// </summary>
+    /// <summary> ZMBA.SyntaxColorizer.VS2019Package GUID string.</summary>
     public const string PackageGuidString = "9b2017db-7aa2-4092-9787-cd28b47160e1";
+
+    [Import] internal IClassificationTypeRegistryService ClassificationRegistry; // Set via MEF
+
+    
 
     #region Package Members
 
@@ -40,6 +45,10 @@ namespace ZMBA.SyntaxColorizer {
     /// <param name="progress">A provider for progress updates.</param>
     /// <returns>A task representing the async work of package initialization, or an already completed task if there is none. Do not return null from this method.</returns>
     protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress) {
+
+      Clazzifier.Definitions.ClassificationTags.Initialize(ClassificationRegistry);
+
+      
       // When initialized asynchronously, the current thread may be a background thread at this point.
       // Do any initialization that requires the UI thread after switching to the UI thread.
       await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);

@@ -8,7 +8,7 @@
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>ZMBA.SyntaxColorizer</Import_RootNamespace>
   </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <DefineConstants>TRACE;RELEASE</DefineConstants>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)ZMBA.SyntaxColorizer.ruleset</CodeAnalysisRuleSet>
@@ -24,14 +24,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)src\ClassifierContext.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)src\Definitions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)src\Exceptions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)src\Extensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)src\FormattingTags.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)src\VBCSClassificationTagProvider.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)src\VBCSTagClassifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\Definitions\ClassificationTags.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\Definitions\Method.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\Definitions\Preprocessor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\Definitions\Member.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\Definitions\Identifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\Definitions\Variable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\Definitions\Syntax.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\Definitions\String.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\Definitions\Type.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\DocumentWorkspace.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\Extensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\VBCSEventListener.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\VBCSTagClassifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\VBCSTagProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\EnumerateOnceCachedArray.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\ZMBA.SyntaxColorizer.Package.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)src\ZMBAFormatDefinition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Clazzifier\Definitions\ZMBAFormatDefinition.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)src\bkp\" />
   </ItemGroup>
 </Project>
