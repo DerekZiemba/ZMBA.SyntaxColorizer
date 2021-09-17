@@ -29,24 +29,19 @@ using CSKind = Microsoft.CodeAnalysis.CSharp.SyntaxKind;
 namespace ZMBA.SyntaxColorizer {
 
   internal static class Extensions {
+    internal const MethodImplOptions AGGRESSIVE_OPTIMIZATION = (MethodImplOptions)512;
+    internal const MethodImplOptions AGGRESSIVE_INLINE = MethodImplOptions.AggressiveInlining | AGGRESSIVE_OPTIMIZATION;
 
-    internal static TagSpan<ClassificationTag> Associate(this ClassificationTag tag, ITextSnapshot snapshot, TextSpan txt) {
-      return new TagSpan<ClassificationTag>(new SnapshotSpan(snapshot, txt.Start, txt.Length), tag);
+
+    [MethodImpl(AGGRESSIVE_INLINE | AGGRESSIVE_OPTIMIZATION)]
+    internal static TextSpan ToTextSpan(this ref SnapshotSpan ss) => new TextSpan(ss.Start.Position, ss.Length);
+
+    [MethodImpl(AGGRESSIVE_INLINE | AGGRESSIVE_OPTIMIZATION)]
+    internal static ISymbol GetRawSymbol(this SemanticModel model, SyntaxNode node) {
+      return node == null ? null : (model.GetSymbolInfo(node).Symbol ?? model.GetDeclaredSymbol(node));
     }
 
-    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
-    private static ImmutableArray<ISymbol> GetMembersByName<T> (this T symbol, string name) where T: INamedTypeSymbol {
-      if(name != null && name.Length > 1) {
-        int index = name.LastIndexOf('.');
-        if(index >= 0) {
-          name = name.Substring(index);
-        }
-        return symbol.GetMembers(name);
-      }
-      return ImmutableArray<ISymbol>.Empty;
-    }
-
-    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
+    [MethodImpl(AGGRESSIVE_INLINE | AGGRESSIVE_OPTIMIZATION)]
     internal static SyntaxNode FindOuterMostNode (this SyntaxNode rootNode, TextSpan span, bool bTrivia) {
       SyntaxNode node = rootNode.FindToken(span.Start, bTrivia).Parent;
       SyntaxNode parent;
@@ -66,54 +61,10 @@ namespace ZMBA.SyntaxColorizer {
       return node;
     }
 
-    [MethodImpl(256 | 512)] //[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    internal static ISymbol GetRawSymbol(this SemanticModel model, SyntaxNode node) {
-      return model.GetSymbolInfo(node).Symbol ?? model.GetDeclaredSymbol(node);
-    }
 
 
-    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
-    internal static bool MethodImplementsInterface<T> (this T symbol) where T: IMethodSymbol {
-      if(symbol.ExplicitInterfaceImplementations.Length > 0) {  return true; }
 
-      ImmutableArray<INamedTypeSymbol> interfaces = symbol.ContainingType.Interfaces;
-      for(var i = 0; i < interfaces.Length; i++) {
-        ImmutableArray<ISymbol> mems = interfaces[i].GetMembersByName(symbol.Name);
-        for (var j = 0; j < mems.Length; j++) {
-          if(mems[j] is IMethodSymbol member && Equals(symbol.ReturnType, member.ReturnType)) {
-            if(symbol.Parameters.Length == member.Parameters.Length) {
-              var impl = symbol.ContainingType.FindImplementationForInterfaceMember(member);
-              if(impl != null && impl.Equals(symbol)) {
-                return true;
-              }
-            }
-          }
-        }
-      }
-      return false;
-    }
 
-    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
-    internal static bool PropertyImplementsInterface<T> (this T symbol) where T: IPropertySymbol {
-      if(symbol.ExplicitInterfaceImplementations.Length > 0) {  return true; }
-
-      ImmutableArray<INamedTypeSymbol> interfaces = symbol.ContainingType.Interfaces;
-      for(var i = 0; i < interfaces.Length; i++) {
-        ImmutableArray<ISymbol> mems = interfaces[i].GetMembersByName(symbol.Name);
-        for(var j = 0; j < mems.Length; j++) {
-          if(mems[j] is IPropertySymbol member && Equals(symbol.Type, member.Type)) {
-            if(symbol.Parameters.Length == member.Parameters.Length) {
-              var impl = symbol.ContainingType.FindImplementationForInterfaceMember(member);
-              if(impl != null && impl.Equals(symbol)) {
-                return true;
-              }
-            }
-          }
-        }
-      }
-
-      return false;
-    }
   }
 
 }

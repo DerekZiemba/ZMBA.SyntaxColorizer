@@ -19,6 +19,9 @@ using CS = Microsoft.CodeAnalysis.CSharp;
 using VBKind = Microsoft.CodeAnalysis.VisualBasic.SyntaxKind;
 using CSKind = Microsoft.CodeAnalysis.CSharp.SyntaxKind;
 
+using static ZMBA.SyntaxColorizer.Extensions;
+using System.Collections.Immutable;
+
 namespace ZMBA.SyntaxColorizer {
 
   internal class VBCSTagClassifier : ITagger<ClassificationTag> {
@@ -34,76 +37,113 @@ namespace ZMBA.SyntaxColorizer {
       this.Buffer = buffer;
     }
 
-    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
-    public IEnumerable<ITagSpan<ClassificationTag>> GetTags(NormalizedSnapshotSpanCollection snapshots) {
-      for (var i = 0; i < snapshots.Count; i++) {
-        SnapshotSpan snapspan = snapshots[i];
-        ClassifierContext ctx = ClassifierContext.GetContext(ref snapspan);
-        if (ctx != null && ctx.ClassifiedSpans != null) {
-          for (var idx = 0; idx < ctx.ClassifiedSpans.Count; idx++) {
-            ClassifiedSpan span = ctx.ClassifiedSpans[idx];
-            TagSpan<ClassificationTag> tag = Classify(ctx, ref span);
-            if (tag != null) { yield return tag; }
-            //if (tag == null) { System.Diagnostics.Debugger.Break(); }            
+
+    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
+    private static bool LoadSemantics<TS>(TS snapshot, out Workspace ws, out Document doc, out SemanticModel model, out SyntaxNode rootNode) where TS: ITextSnapshot {
+      doc = null;
+      model = null;
+      rootNode = null;
+      SourceTextContainer stc = snapshot.TextBuffer.AsTextContainer();
+      
+      if (!Workspace.TryGetWorkspace(stc, out ws)) { ws = Workspace.GetWorkspaceRegistration(stc).Workspace; }
+      if (ws != null) {
+        DocumentId docid = ws.GetDocumentIdInCurrentContext(stc);
+        if (docid != null) {
+          doc = ws.CurrentSolution.WithDocumentText(docid, stc.CurrentText, PreservationMode.PreserveIdentity).GetDocument(docid);
+          if (doc != null && doc.SupportsSemanticModel) {
+            if (!doc.TryGetSemanticModel(out model)) { model = doc.GetSemanticModelAsync().ConfigureAwait(false).GetAwaiter().GetResult(); }
+            if (doc.SupportsSyntaxTree) {
+              if (!model.SyntaxTree.TryGetRoot(out rootNode)) { rootNode = model.SyntaxTree.GetRoot(); }
+            }
+            return model != null;
           }
-          ctx.Dispose();
+        }
+      }
+      return false;
+    }
+
+    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
+    public IEnumerable<ITagSpan<ClassificationTag>> GetTags(NormalizedSnapshotSpanCollection snapshots) {
+      for (var i = 0; i < snapshots.Count; i++) {   
+        SnapshotSpan snapspan = snapshots[i];
+        ITextSnapshot snapshot = snapspan.Snapshot;
+        if (LoadSemantics(snapshot, out Workspace ws, out Document doc, out SemanticModel model, out SyntaxNode rootNode)) {
+          List<ClassifiedSpan> spans = (List<ClassifiedSpan>)Classifier.GetClassifiedSpans(model, snapspan.ToTextSpan(), ws);
+          for (var j = 0; j < spans.Count; j++) {
+            ClassifiedSpan span = spans[j];
+            TextSpan txtspan = span.TextSpan;
+            string type = span.ClassificationType;
+            ClassificationTag tag = null;
+            switch (type) {
+              case "string": 
+                tag = ClassifyString(txtspan, rootNode); 
+                break;
+              case "method name": 
+              case "property name":
+              case "identifier": 
+                tag = ClassifyIdentifier(txtspan, model, rootNode);
+                break;
+              case "keyword - control": 
+                tag = ClassifyKeywordControl(txtspan, rootNode);
+                break;
+              case "operator": 
+                tag = ClassifyOperator(txtspan, model, rootNode);
+                break;
+              case "operator - overloaded": 
+                tag = ClassifyOperatorOverloaded(txtspan, model, rootNode);
+                break;
+              case "keyword": tag = Tags.SyntaxKeyword; break;
+              case "event name": tag = Tags.IdentifierEvent; break;
+              case "field name": tag = Tags.IdentifierField; break;
+              case "constant name": tag = Tags.IdentifierConst; break;
+              case "local name": tag = Tags.Variable; break;
+              case "parameter name": tag = Tags.Param; break;
+              case "enum member name": tag = Tags.EnumMember; break;
+              case "extension method name": tag = Tags.MethodExtension; break;
+              case "number": tag = Tags.SyntaxNumber; break;
+              case "punctuation": tag = Tags.SyntaxPunctuation; break;
+              case "comment": tag = Tags.SyntaxComment; break;
+              case "namespace name": tag = Tags.IdentifierNamespace; break;
+              case "class name": tag = Tags.TypeClass; break;
+              case "module name": tag = Tags.TypeModule; break;
+              case "struct name": tag = Tags.TypeStructure; break;
+              case "interface name": tag = Tags.TypeInterface; break;
+              case "type parameter name": tag = Tags.TypeGeneric; break;
+              case "delegate name": tag = Tags.TypeDelegate; break;
+              case "enum name": tag = Tags.Enum; break;
+              case "preprocessor keyword": tag = Tags.Preprocessor; break;
+              case "preprocessor text": tag = Tags.PreprocessorText; break;
+              case "static symbol":
+              //case "xml doc comment": break;
+              //case "xml doc comment - text": break;
+              //case "xml doc comment - name": break;
+              //case "xml doc comment - delimiter": break;
+              //case "xml doc comment - attribute name": break;
+              //case "xml doc comment - attribute value": break;
+              //case "xml doc comment - attribute quotes": break;
+              //case "xml doc comment - entity reference": break;
+              //case "excluded code": break;
+              default:
+#if DEBUG
+                System.Diagnostics.Debugger.Break();
+#endif
+                break;
+            }
+
+            if (tag != null) {
+              yield return new TagSpan<ClassificationTag>(new SnapshotSpan(snapshot, txtspan.Start, txtspan.Length), tag);
+            }
+          }
         }
       }
     }
 
-    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
-    private TagSpan<ClassificationTag> Classify(ClassifierContext context, ref ClassifiedSpan span) {
-      switch (span.ClassificationType) {
-        case "string": return ClassifyString(context, ref span);
-        case "method name": return ClassifyIdentifier(context, ref span);
-        case "property name": return ClassifyIdentifier(context, ref span);
-        case "identifier": return ClassifyIdentifier(context, ref span);
-        case "event name": return Tags.IdentifierEvent.Associate(context.SnapShot, span.TextSpan);
-        case "field name": return Tags.IdentifierField.Associate(context.SnapShot, span.TextSpan);
-        case "constant name": return Tags.IdentifierConst.Associate(context.SnapShot, span.TextSpan);
-        case "local name": return Tags.Variable.Associate(context.SnapShot, span.TextSpan);
-        case "parameter name": return Tags.Param.Associate(context.SnapShot, span.TextSpan);
-        case "enum member name": return Tags.EnumMember.Associate(context.SnapShot, span.TextSpan);
-        case "extension method name": return Tags.MethodExtension.Associate(context.SnapShot, span.TextSpan);
-        case "keyword": return Tags.SyntaxKeyword.Associate(context.SnapShot, span.TextSpan);
-        case "keyword - control": return ClassifyKeywordControl(context, ref span);
-        case "operator": return ClassifyOperator(context, ref span);
-        case "operator - overloaded": return ClassifyOperatorOverloaded(context, ref span);
-        case "number": return Tags.SyntaxNumber.Associate(context.SnapShot, span.TextSpan);
-        case "punctuation": return Tags.SyntaxPunctuation.Associate(context.SnapShot, span.TextSpan);
-        case "comment": return Tags.SyntaxComment.Associate(context.SnapShot, span.TextSpan);
-        case "class name": return Tags.TypeClass.Associate(context.SnapShot, span.TextSpan);
-        case "module name": return Tags.TypeModule.Associate(context.SnapShot, span.TextSpan);
-        case "struct name": return Tags.TypeStructure.Associate(context.SnapShot, span.TextSpan);
-        case "interface name": return Tags.TypeInterface.Associate(context.SnapShot, span.TextSpan);
-        case "type parameter name": return Tags.TypeGeneric.Associate(context.SnapShot, span.TextSpan);
-        case "delegate name": return Tags.TypeDelegate.Associate(context.SnapShot, span.TextSpan);
-        case "enum name": return Tags.Enum.Associate(context.SnapShot, span.TextSpan);
-        case "preprocessor keyword": return Tags.Preprocessor.Associate(context.SnapShot, span.TextSpan);
-        case "preprocessor text": return Tags.PreprocessorText.Associate(context.SnapShot, span.TextSpan);
-        case "namespace name": return Tags.IdentifierNamespace.Associate(context.SnapShot, span.TextSpan);
-        case "static symbol":
 
-          return null;
-        //case "xml doc comment": break;
-        //case "xml doc comment - text": break;
-        //case "xml doc comment - name": break;
-        //case "xml doc comment - delimiter": break;
-        //case "xml doc comment - attribute name": break;
-        //case "xml doc comment - attribute value": break;
-        //case "xml doc comment - attribute quotes": break;
-        //case "xml doc comment - entity reference": break;
-        //case "excluded code": break;
-        default:
-          System.Diagnostics.Debugger.Break();
-          break;
-      }
-      return null;
-    }
 
-    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
-    public TagSpan<ClassificationTag> ClassifyKeywordControl(ClassifierContext ctx, ref ClassifiedSpan span) {
-      SyntaxNode node = ctx.RootNode.FindOuterMostNode(span.TextSpan, false);
+    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
+    private ClassificationTag ClassifyKeywordControl(TextSpan txtspan, SyntaxNode rootNode) {
+      ClassificationTag tag = Tags.SyntaxKeywordControl;
+      SyntaxNode node = rootNode?.FindOuterMostNode(txtspan, false);
       if (node != null) {
         switch (node.RawKind) {
           case (int)CSKind.ReturnKeyword:
@@ -111,16 +151,18 @@ namespace ZMBA.SyntaxColorizer {
           case (int)CSKind.ReturnStatement:
           case (int)VBKind.ReturnKeyword:
           case (int)VBKind.ReturnStatement:
-            return Tags.SyntaxKeyword.Associate(ctx.SnapShot, span.TextSpan);
+            tag = Tags.SyntaxKeyword;
+            break;
         }
       }
-      return Tags.SyntaxKeywordControl.Associate(ctx.SnapShot, span.TextSpan);
+      return tag;
     }
 
 
-    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
-    public TagSpan<ClassificationTag> ClassifyString(ClassifierContext ctx, ref ClassifiedSpan span) {
-      SyntaxNode node = ctx.RootNode.FindOuterMostNode(span.TextSpan, false);
+    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
+    private ClassificationTag ClassifyString(TextSpan txtspan, SyntaxNode rootNode) {
+      ClassificationTag tag = Tags.String;
+      SyntaxNode node = rootNode?.FindOuterMostNode(txtspan, false);
       if (node != null) {
         switch (node.RawKind) {
           case (int)VBKind.InterpolatedStringExpression:
@@ -128,20 +170,23 @@ namespace ZMBA.SyntaxColorizer {
           case (int)CSKind.InterpolatedStringStartToken:
           case (int)CSKind.InterpolatedStringEndToken:
           case (int)CSKind.InterpolatedStringExpression:
-            return Tags.StringToken.Associate(ctx.SnapShot, span.TextSpan);
+            tag = Tags.StringToken;
+            break;
           case (int)VBKind.CharacterLiteralToken:
           case (int)VBKind.CharacterLiteralExpression:
           case (int)VBKind.SingleQuoteToken:
           case (int)CSKind.CharacterLiteralToken:
           case (int)CSKind.CharacterLiteralExpression:
           case (int)CSKind.SingleQuoteToken:
-            return Tags.StringSingleQuote.Associate(ctx.SnapShot, span.TextSpan);
+            tag = Tags.StringSingleQuote;
+            break;
           case (int)VBKind.InterpolatedStringTextToken:
           case (int)VBKind.InterpolatedStringText:
           case (int)CSKind.InterpolatedStringTextToken:
           case (int)CSKind.InterpolatedStringText:
           case (int)CSKind.InterpolatedStringToken:
-            return Tags.StringInterpolated.Associate(ctx.SnapShot, span.TextSpan);
+            tag = Tags.StringInterpolated;
+            break;
           case (int)VBKind.StringLiteralToken:
           case (int)VBKind.StringLiteralExpression:
           case (int)VBKind.XmlEntityLiteralToken:
@@ -153,144 +198,188 @@ namespace ZMBA.SyntaxColorizer {
             break;
         }
       }
-      return Tags.String.Associate(ctx.SnapShot, span.TextSpan);
+      return tag;
     }
 
-    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
-    private TagSpan<ClassificationTag> ClassifyOperator(ClassifierContext ctx, ref ClassifiedSpan span) {
-      SyntaxNode node = ctx.RootNode.FindOuterMostNode(span.TextSpan, true);
+    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
+    private ClassificationTag ClassifyOperator(TextSpan txtspan, SemanticModel model, SyntaxNode rootNode) {
+      ClassificationTag tag = Tags.SyntaxOperator;
+      SyntaxNode node = rootNode?.FindOuterMostNode(txtspan, true);
       if (node != null) {
-        ISymbol rawsymbol = ctx.SemanticModel.GetRawSymbol(node);
-        if (rawsymbol != null) {
-          switch (rawsymbol.Kind) {
-            case SymbolKind.Method: return ClassifyIdentifier_Method(ctx, ref span, node, (IMethodSymbol)rawsymbol);
-          }
+        ISymbol rawsymbol = model.GetRawSymbol(node);
+        if (rawsymbol != null && rawsymbol.Kind == SymbolKind.Method) {
+          tag = ClassifyIdentifier_Method((IMethodSymbol)rawsymbol, node);
         }
       }
-      return Tags.SyntaxOperator.Associate(ctx.SnapShot, span.TextSpan);
+      return tag;
     }
 
-    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
-    private TagSpan<ClassificationTag> ClassifyOperatorOverloaded(ClassifierContext ctx, ref ClassifiedSpan span) {
-      SyntaxNode node = ctx.RootNode.FindOuterMostNode(span.TextSpan, true);
+    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
+    private ClassificationTag ClassifyOperatorOverloaded(TextSpan txtspan, SemanticModel model, SyntaxNode rootNode) {
+      ClassificationTag tag = Tags.SyntaxOperatorOverloaded;
+      SyntaxNode node = rootNode?.FindOuterMostNode(txtspan, true);
       if (node != null) {
-        ISymbol rawsymbol = ctx.SemanticModel.GetRawSymbol(node);
-        if (rawsymbol != null) {
-          switch (rawsymbol.Kind) {
-            case SymbolKind.Method: return ClassifyIdentifier_Method(ctx, ref span, node, (IMethodSymbol)rawsymbol);
-          }
+        ISymbol rawsymbol = model.GetRawSymbol(node);
+        if (rawsymbol != null && rawsymbol.Kind == SymbolKind.Method) {
+          tag = ClassifyIdentifier_Method((IMethodSymbol)rawsymbol, node);
         }
       }
-      return Tags.SyntaxOperatorOverloaded.Associate(ctx.SnapShot, span.TextSpan);
+      return tag;
     }
 
-    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
-    private TagSpan<ClassificationTag> ClassifyIdentifier(ClassifierContext ctx, ref ClassifiedSpan span) {
-      SyntaxNode node = ctx.RootNode.FindOuterMostNode(span.TextSpan, true);
+    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
+    private ClassificationTag ClassifyIdentifier(TextSpan txtspan, SemanticModel model, SyntaxNode rootNode) {
+      ClassificationTag tag = Tags.Identifier;
+      SyntaxNode node = rootNode?.FindOuterMostNode(txtspan, true);
       if (node != null) {
         switch (node.RawKind) {
           case (int)VBKind.Attribute:
           case (int)CSKind.Attribute:
-            return Tags.IdentifierAttribute.Associate(ctx.SnapShot, span.TextSpan);
+            tag = Tags.IdentifierAttribute;
+            break;
           default:
-            ISymbol rawsymbol = ctx.SemanticModel.GetRawSymbol(node);
+            ISymbol rawsymbol = model.GetRawSymbol(node);
             if (rawsymbol != null) {
               switch (rawsymbol.Kind) {
-                case SymbolKind.Field: return ClassifyIdentifier_Field(ctx, ref span, (IFieldSymbol)rawsymbol);
-                case SymbolKind.Property: return ClassifyIdentifier_Property(ctx, ref span, (IPropertySymbol)rawsymbol);
-                case SymbolKind.Local: return ClassifyIdentifier_Local(ctx, ref span, (ILocalSymbol)rawsymbol);
-                case SymbolKind.NamedType: return ClassifyIdentifier_NamedType(ctx, ref span, (INamedTypeSymbol)rawsymbol);
-                case SymbolKind.Method: return ClassifyIdentifier_Method(ctx, ref span, node, (IMethodSymbol)rawsymbol);
-                case SymbolKind.Parameter: return Tags.Param.Associate(ctx.SnapShot, span.TextSpan);
-                case SymbolKind.TypeParameter: return Tags.TypeGeneric.Associate(ctx.SnapShot, span.TextSpan);
-                case SymbolKind.DynamicType: return Tags.TypeDynamic.Associate(ctx.SnapShot, span.TextSpan);
-                case SymbolKind.Namespace: return Tags.IdentifierNamespace.Associate(ctx.SnapShot, span.TextSpan);
-                case SymbolKind.Event: return Tags.IdentifierEvent.Associate(ctx.SnapShot, span.TextSpan);
-                case SymbolKind.Label: return Tags.IdentifierLabel.Associate(ctx.SnapShot, span.TextSpan);
-                case SymbolKind.Preprocessing: return Tags.PreprocessorText.Associate(ctx.SnapShot, span.TextSpan);
+                case SymbolKind.Field: 
+                  tag = ClassifyIdentifier_Field((IFieldSymbol)rawsymbol);
+                  break;
+                case SymbolKind.Property: 
+                  tag = PropertyImplementsInterface((IPropertySymbol)rawsymbol) ? Tags.IdentifierPropertyInterfaceImplementation : Tags.IdentifierProperty;
+                  break;
+                case SymbolKind.Local: 
+                  tag = ClassifyIdentifier_Local((ILocalSymbol)rawsymbol);
+                  break;
+                case SymbolKind.NamedType: 
+                  tag = ClassifyIdentifier_NamedType((INamedTypeSymbol)rawsymbol);
+                  break;
+                case SymbolKind.Method: 
+                  tag = ClassifyIdentifier_Method((IMethodSymbol)rawsymbol, node);
+                  break;
+                case SymbolKind.Parameter: 
+                  tag = Tags.Param;
+                  break;
+                case SymbolKind.TypeParameter: 
+                  tag = Tags.TypeGeneric;
+                  break;
+                case SymbolKind.DynamicType: 
+                  tag = Tags.TypeDynamic;
+                  break;
+                case SymbolKind.Namespace: 
+                  tag = Tags.IdentifierNamespace;
+                  break;
+                case SymbolKind.Event: 
+                  tag = Tags.IdentifierEvent;
+                  break;
+                case SymbolKind.Label: 
+                  tag = Tags.IdentifierLabel;
+                  break;
+                case SymbolKind.Preprocessing: 
+                  tag = Tags.PreprocessorText;
+                  break;
               }
-            }
+            } 
             break;
         }
       }
-      return Tags.Identifier.Associate(ctx.SnapShot, span.TextSpan);
-    }
+      return tag;
 
-    [MethodImpl(256 | 512)] //[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    private TagSpan<ClassificationTag> ClassifyIdentifier_Field<T>(ClassifierContext ctx, ref ClassifiedSpan span, T symbol) where T : IFieldSymbol {
-      if (symbol.ContainingType.TypeKind == TypeKind.Enum) {
-        return Tags.EnumMember.Associate(ctx.SnapShot, span.TextSpan);
-      }
-      else if (symbol.IsConst) {
-        return Tags.IdentifierConst.Associate(ctx.SnapShot, span.TextSpan);
-      }
-      return Tags.IdentifierField.Associate(ctx.SnapShot, span.TextSpan);
-    }
+      [MethodImpl(AGGRESSIVE_INLINE | AGGRESSIVE_OPTIMIZATION)]
+      ClassificationTag ClassifyIdentifier_Field<T>(T symbol) where T : IFieldSymbol => symbol.ContainingType.TypeKind == TypeKind.Enum ? Tags.EnumMember : (symbol.IsConst ? Tags.IdentifierConst : Tags.IdentifierField);
 
-    [MethodImpl(256 | 512)] //[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    private TagSpan<ClassificationTag> ClassifyIdentifier_Property<T>(ClassifierContext ctx, ref ClassifiedSpan span, T symbol) where T : IPropertySymbol {
-      if (symbol.PropertyImplementsInterface()) {
-        return Tags.IdentifierPropertyInterfaceImplementation.Associate(ctx.SnapShot, span.TextSpan);
-      }
-      return Tags.IdentifierProperty.Associate(ctx.SnapShot, span.TextSpan);
-    }
+      [MethodImpl(AGGRESSIVE_INLINE | AGGRESSIVE_OPTIMIZATION)]
+      ClassificationTag ClassifyIdentifier_Local<T>(T symbol) where T: ILocalSymbol => symbol.IsConst ? Tags.IdentifierConst : Tags.Variable;
 
-    [MethodImpl(256 | 512)] //[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    private TagSpan<ClassificationTag> ClassifyIdentifier_Local<T>(ClassifierContext ctx, ref ClassifiedSpan span, T symbol) where T : ILocalSymbol {
-      if (symbol.IsConst) {
-        return Tags.IdentifierConst.Associate(ctx.SnapShot, span.TextSpan);
-      }
-      return Tags.Variable.Associate(ctx.SnapShot, span.TextSpan);
-    }
+      [MethodImpl(AGGRESSIVE_INLINE | AGGRESSIVE_OPTIMIZATION)]
+      ClassificationTag ClassifyIdentifier_NamedType<T>(T symbol) where T : INamedTypeSymbol => symbol.SpecialType != SpecialType.None ? Tags.Type : Tags.TypeClass;
 
-    [MethodImpl(256 | 512)] //[MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    private TagSpan<ClassificationTag> ClassifyIdentifier_NamedType<T>(ClassifierContext ctx, ref ClassifiedSpan span, T symbol) where T : INamedTypeSymbol {
-      if (symbol.SpecialType != SpecialType.None) {
-        return Tags.Type.Associate(ctx.SnapShot, span.TextSpan);
+      [MethodImpl(AGGRESSIVE_OPTIMIZATION)] static bool PropertyImplementsInterface<T>(T symbol) where T : IPropertySymbol {
+        if (symbol.ExplicitInterfaceImplementations.Length > 0) { return true; }
+
+        ImmutableArray<INamedTypeSymbol> interfaces = symbol.ContainingType.Interfaces;
+        for (var i = 0; i < interfaces.Length; i++) {
+          string fullname = symbol.Name;
+          int period = fullname.LastIndexOf('.');
+          if (period >= 0) { fullname = fullname.Substring(period); }
+          ImmutableArray<ISymbol> mems = interfaces[i].GetMembers(fullname);
+          for (var j = 0; j < mems.Length; j++) if (mems[j] is T member) {
+            if (ReferenceEquals(symbol.Type, member.Type) && symbol.Parameters.Length == member.Parameters.Length) {
+              var impl = symbol.ContainingType.FindImplementationForInterfaceMember(member);
+              if (impl != null && symbol.Equals(impl)) {
+                return true;
+              }
+            }
+          }
+        }
+        return false;
       }
-      return Tags.TypeClass.Associate(ctx.SnapShot, span.TextSpan);
     }
 
 
-    [MethodImpl(512)] // MethodImplOptions.AggressiveOptimization
-    private TagSpan<ClassificationTag> ClassifyIdentifier_Method<T>(ClassifierContext ctx, ref ClassifiedSpan span, SyntaxNode node, T symbol) where T : IMethodSymbol {
+
+
+    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
+    private ClassificationTag ClassifyIdentifier_Method<T>(T symbol, SyntaxNode node) where T: IMethodSymbol {
+      ClassificationTag tag;
       switch (node.Parent.RawKind) {
         case (int)VBKind.Attribute:
         case (int)CSKind.Attribute:
         case (int)VBKind.QualifiedName when node.Parent.Parent.RawKind == (int)VBKind.Attribute:
         case (int)CSKind.QualifiedName when node.Parent.Parent.RawKind == (int)CSKind.Attribute:
-          return Tags.IdentifierAttribute.Associate(ctx.SnapShot, span.TextSpan);
+          tag = Tags.IdentifierAttribute;
+          break;
         default:
           switch (symbol.MethodKind) {
             case MethodKind.Constructor:
             case MethodKind.StaticConstructor:
             case MethodKind.Destructor:
-              return Tags.MethodConstructor.Associate(ctx.SnapShot, span.TextSpan);
+              tag = Tags.MethodConstructor;
+              break;
             case MethodKind.UserDefinedOperator:
-              return Tags.MethodUserDefinedOperator.Associate(ctx.SnapShot, span.TextSpan);
+              tag = Tags.MethodUserDefinedOperator;
+              break;
             case MethodKind.LocalFunction:
-              return Tags.Method.Associate(ctx.SnapShot, span.TextSpan); // TODO:
+              tag = Tags.Method; // TODO:
+              break;
             default:
               if (symbol.IsExtensionMethod) {
-                return Tags.MethodExtension.Associate(ctx.SnapShot, span.TextSpan);
+                tag = Tags.MethodExtension;
               }
               else if (symbol.IsStatic) {
-                return Tags.MethodStatic.Associate(ctx.SnapShot, span.TextSpan);
+                tag = Tags.MethodStatic;
               }
               else if (symbol.IsVirtual || symbol.IsOverride) {
-                return Tags.MethodVirtual.Associate(ctx.SnapShot, span.TextSpan);
-              }
-              else if (symbol.MethodImplementsInterface()) {
-                return Tags.MethodInterfaceImplementation.Associate(ctx.SnapShot, span.TextSpan);
+                tag = Tags.MethodVirtual;
               }
               else {
-                return Tags.Method.Associate(ctx.SnapShot, span.TextSpan);
+                tag = symbol.ExplicitInterfaceImplementations.Length > 0 || MethodImplementsInterface(symbol) ? Tags.MethodInterfaceImplementation : Tags.Method;
               }
-
+              break;
           }
+          break;
       }
-    }
- 
+      return tag;
+
+    
+      [MethodImpl(AGGRESSIVE_OPTIMIZATION)] static bool MethodImplementsInterface<T>(T symbol) where T : IMethodSymbol {
+        ImmutableArray<INamedTypeSymbol> interfaces = symbol.ContainingType.Interfaces;
+        for (var i = 0; i < interfaces.Length; i++) {
+          string fullname = symbol.Name;
+          int period = fullname.LastIndexOf('.');
+          if (period >= 0) { fullname = fullname.Substring(period); }
+          ImmutableArray<ISymbol> mems = interfaces[i].GetMembers(fullname);
+          for (var j = 0; j < mems.Length; j++) if (mems[j] is T member) {
+            if (ReferenceEquals(symbol.ReturnType, member.ReturnType) && symbol.Parameters.Length == member.Parameters.Length) {
+              var impl = symbol.ContainingType.FindImplementationForInterfaceMember(member);
+              if (impl != null && symbol.Equals(impl)) {
+                return true;
+              }
+            }
+          }
+        }
+        return false;
+      }
+    } 
   }
 
 

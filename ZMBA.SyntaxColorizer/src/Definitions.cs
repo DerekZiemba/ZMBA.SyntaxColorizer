@@ -27,6 +27,7 @@ namespace ZMBA.SyntaxColorizer {
         public KeyWord() : base(Key) {
 
           ForegroundColor = Color.FromRgb(147, 199, 99);
+          ForegroundColor = Color.FromRgb(86, 156, 214);
         }
         private KeyWord(string id) : base(id) {
 
@@ -46,7 +47,7 @@ namespace ZMBA.SyntaxColorizer {
 
           public Control() : base(Key) {
 
-            ForegroundColor = Color.FromRgb(216, 160, 223);
+            ForegroundColor = Color.FromRgb(255, 127, 127);
           }
 
         }
@@ -68,6 +69,7 @@ namespace ZMBA.SyntaxColorizer {
 
         public Operator() : this(Key) {
           ForegroundColor = Color.FromRgb(255, 255, 128);
+          ForegroundColor = Color.FromRgb(255, 127, 127);
         }
 
         public Operator(string id) : base(id) {
@@ -88,7 +90,8 @@ namespace ZMBA.SyntaxColorizer {
 
 
           public Overloaded() : base(Key) {
-
+            ForegroundColor = Color.FromRgb(220, 220, 170);
+            ForegroundColor = Color.FromRgb(255, 255, 128);
             IsItalic = true;
           }
         }
@@ -109,8 +112,8 @@ namespace ZMBA.SyntaxColorizer {
 
 
         public Number() : base(Key) {
-
           ForegroundColor = Color.FromRgb(255, 205, 34);
+          ForegroundColor = Color.FromRgb(255, 205, 22);
         }
       }
 
