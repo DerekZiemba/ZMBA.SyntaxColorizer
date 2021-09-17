@@ -42,11 +42,10 @@
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants>CODE_ANALYSIS;RELEASE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
@@ -298,9 +297,6 @@
       <Version>2.8.46</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ZMBA.SyntaxColorizer.VS2019Package.cs" />
-  </ItemGroup>
   <Import Project="..\ZMBA.SyntaxColorizer\ZMBA.SyntaxColorizer.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
@@ -311,4 +307,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+    <Target Name="IncludePackageReferenceDependencies" AfterTargets="GetVsixSourceItems">
+      <ItemGroup>
+        <!-- <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').EndsWith('.dll'))" /> -->
+        <VSIXSourceItem Include="@(ReferencePath)" />
+      </ItemGroup>
+    </Target>
 </Project>

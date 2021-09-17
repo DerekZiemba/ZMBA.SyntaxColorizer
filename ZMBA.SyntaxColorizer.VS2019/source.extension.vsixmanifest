@@ -28,4 +28,10 @@ Supported languages: C#, Visual Basic, JavaScript, HTML</Description>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
         <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
     </Assets>
+  <Target Name="IncludePackageReferenceDependencies" AfterTargets="GetVsixSourceItems">
+    <ItemGroup>
+      <!-- <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').EndsWith('.dll'))" /> -->
+      <VSIXSourceItem Include="@(ReferencePath)" />
+    </ItemGroup>
+  </Target>
 </PackageManifest>
