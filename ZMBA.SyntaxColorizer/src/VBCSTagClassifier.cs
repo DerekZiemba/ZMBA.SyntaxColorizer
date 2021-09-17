@@ -24,10 +24,23 @@ using System.Collections.Immutable;
 
 namespace ZMBA.SyntaxColorizer {
 
+  [Export(typeof(ITaggerProvider))]
+  [ContentType("Basic")]
+  [ContentType("CSharp")]
+  [TagType(typeof(IClassificationTag))]
+  internal sealed class VBCSClassificationTagProvider : ITaggerProvider {
+    [Import] internal IClassificationTypeRegistryService ClassificationRegistry; // Set via MEF
+
+    public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag {
+      //Don't need to pass the buffer because we aren't doing anything too complicated. 
+      //Would need it if we had to do some intense tagging on a background thread.
+      return (ITagger<T>)buffer.Properties.GetOrCreateSingletonProperty(() => new VBCSTagClassifier(ClassificationRegistry, buffer));
+    }
+  }
+
+
   internal class VBCSTagClassifier : ITagger<ClassificationTag> {
-#pragma warning disable CS0067 // The event is never used
     public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
-#pragma warning restore CS0067 // The event is never used
 
     private readonly FormattingTags Tags;
     private readonly ITextBuffer Buffer;
@@ -138,7 +151,31 @@ namespace ZMBA.SyntaxColorizer {
       }
     }
 
+    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
+    private ClassificationTag ClassifyOperator(TextSpan txtspan, SemanticModel model, SyntaxNode rootNode) {
+      ClassificationTag tag = Tags.SyntaxOperator;
+      SyntaxNode node = rootNode?.FindOuterMostNode(txtspan, true);
+      if (node != null) {
+        ISymbol rawsymbol = model.GetRawSymbol(node);
+        if (rawsymbol != null && rawsymbol.Kind == SymbolKind.Method) {
+          tag = ClassifyIdentifier_Method((IMethodSymbol)rawsymbol, node);
+        }
+      }
+      return tag;
+    }
 
+    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
+    private ClassificationTag ClassifyOperatorOverloaded(TextSpan txtspan, SemanticModel model, SyntaxNode rootNode) {
+      ClassificationTag tag = Tags.SyntaxOperatorOverloaded;
+      SyntaxNode node = rootNode?.FindOuterMostNode(txtspan, true);
+      if (node != null) {
+        ISymbol rawsymbol = model.GetRawSymbol(node);
+        if (rawsymbol != null && rawsymbol.Kind == SymbolKind.Method) {
+          tag = ClassifyIdentifier_Method((IMethodSymbol)rawsymbol, node);
+        }
+      }
+      return tag;
+    }
 
     [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
     private ClassificationTag ClassifyKeywordControl(TextSpan txtspan, SyntaxNode rootNode) {
@@ -201,31 +238,7 @@ namespace ZMBA.SyntaxColorizer {
       return tag;
     }
 
-    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
-    private ClassificationTag ClassifyOperator(TextSpan txtspan, SemanticModel model, SyntaxNode rootNode) {
-      ClassificationTag tag = Tags.SyntaxOperator;
-      SyntaxNode node = rootNode?.FindOuterMostNode(txtspan, true);
-      if (node != null) {
-        ISymbol rawsymbol = model.GetRawSymbol(node);
-        if (rawsymbol != null && rawsymbol.Kind == SymbolKind.Method) {
-          tag = ClassifyIdentifier_Method((IMethodSymbol)rawsymbol, node);
-        }
-      }
-      return tag;
-    }
 
-    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
-    private ClassificationTag ClassifyOperatorOverloaded(TextSpan txtspan, SemanticModel model, SyntaxNode rootNode) {
-      ClassificationTag tag = Tags.SyntaxOperatorOverloaded;
-      SyntaxNode node = rootNode?.FindOuterMostNode(txtspan, true);
-      if (node != null) {
-        ISymbol rawsymbol = model.GetRawSymbol(node);
-        if (rawsymbol != null && rawsymbol.Kind == SymbolKind.Method) {
-          tag = ClassifyIdentifier_Method((IMethodSymbol)rawsymbol, node);
-        }
-      }
-      return tag;
-    }
 
     [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
     private ClassificationTag ClassifyIdentifier(TextSpan txtspan, SemanticModel model, SyntaxNode rootNode) {
@@ -361,7 +374,7 @@ namespace ZMBA.SyntaxColorizer {
       return tag;
 
     
-      [MethodImpl(AGGRESSIVE_OPTIMIZATION)] static bool MethodImplementsInterface<T>(T symbol) where T : IMethodSymbol {
+      [MethodImpl(AGGRESSIVE_OPTIMIZATION)] static bool MethodImplementsInterface(T symbol) {
         ImmutableArray<INamedTypeSymbol> interfaces = symbol.ContainingType.Interfaces;
         for (var i = 0; i < interfaces.Length; i++) {
           string fullname = symbol.Name;

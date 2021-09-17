@@ -53,6 +53,7 @@
     <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
+    <NoWarn>CS0067</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
@@ -307,10 +308,10 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-    <Target Name="IncludePackageReferenceDependencies" AfterTargets="GetVsixSourceItems">
-      <ItemGroup>
-        <!-- <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').EndsWith('.dll'))" /> -->
-        <VSIXSourceItem Include="@(ReferencePath)" />
-      </ItemGroup>
-    </Target>
+  <Target Name="IncludePackageReferenceDependencies" AfterTargets="GetVsixSourceItems">
+    <ItemGroup>
+      <!-- <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').EndsWith('.dll'))" /> -->
+      <VSIXSourceItem Include="@(ReferencePath)" />
+    </ItemGroup>
+  </Target>
 </Project>

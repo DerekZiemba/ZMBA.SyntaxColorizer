@@ -4,7 +4,9 @@ using System.Threading;
 using Microsoft.VisualStudio.Shell;
 using Task = System.Threading.Tasks.Task;
 
+
 namespace ZMBA.SyntaxColorizer {
+
   /// <summary>
   /// This is the class that implements the package exposed by this assembly.
   /// </summary>

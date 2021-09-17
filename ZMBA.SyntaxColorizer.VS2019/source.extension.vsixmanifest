@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="ZMBA.SyntaxColorizer.VS2019.e2b98ac0-cc6a-4211-8b5c-d3854e619ad6" Version="1.1.0.0" Language="en-US" Publisher="Derek Ziemba" />
+        <Identity Id="ZMBA.SyntaxColorizer.VS2019.e2b98ac0-cc6a-4211-8b5c-d3854e619ad6" Version="1.2.0.1" Language="en-US" Publisher="Derek Ziemba" />
         <DisplayName>ZMBA.SyntaxColorizer.VS2019</DisplayName>
         <Description xml:space="preserve">Style code Font and Color based on Syntax and Semantic meaning. Font Style  Font and Color based on Syntax and Semantic meaning.
 Supported languages: C#, Visual Basic, JavaScript, HTML</Description>
@@ -28,10 +28,10 @@ Supported languages: C#, Visual Basic, JavaScript, HTML</Description>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
         <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
     </Assets>
-  <Target Name="IncludePackageReferenceDependencies" AfterTargets="GetVsixSourceItems">
-    <ItemGroup>
-      <!-- <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').EndsWith('.dll'))" /> -->
-      <VSIXSourceItem Include="@(ReferencePath)" />
-    </ItemGroup>
-  </Target>
+    <Target Name="IncludePackageReferenceDependencies" AfterTargets="GetVsixSourceItems">
+        <ItemGroup>
+            <!-- <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').EndsWith('.dll'))" /> -->
+            <VSIXSourceItem Include="@(ReferencePath)" />
+        </ItemGroup>
+    </Target>
 </PackageManifest>

@@ -27,7 +27,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)src\Definitions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\FormattingTags.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)src\VBCSClassificationTagProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\VBCSTagClassifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\ZMBA.SyntaxColorizer.Package.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\ZMBAFormatDefinition.cs" />
