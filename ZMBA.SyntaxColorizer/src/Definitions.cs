@@ -11,7 +11,6 @@ namespace ZMBA.SyntaxColorizer {
     internal static class Syntax {
 
 
-
       [Export(typeof(EditorFormatDefinition))]
       [UserVisible(true)]
       [Order(After = Priority.High)]
