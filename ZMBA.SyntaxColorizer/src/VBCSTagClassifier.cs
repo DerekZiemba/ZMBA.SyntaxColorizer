@@ -290,6 +290,7 @@ namespace ZMBA.SyntaxColorizer {
           }
       }
     }
+ 
   }
 
 
