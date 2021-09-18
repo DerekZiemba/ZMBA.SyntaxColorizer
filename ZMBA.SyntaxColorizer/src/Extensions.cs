@@ -33,9 +33,7 @@ namespace ZMBA.SyntaxColorizer {
     internal const MethodImplOptions AGGRESSIVE_INLINE = MethodImplOptions.AggressiveInlining | AGGRESSIVE_OPTIMIZATION;
 
 
-    [MethodImpl(AGGRESSIVE_INLINE | AGGRESSIVE_OPTIMIZATION)]
-    internal static TextSpan ToTextSpan(this ref SnapshotSpan ss) => new TextSpan(ss.Start.Position, ss.Length);
-
+ 
     [MethodImpl(AGGRESSIVE_INLINE | AGGRESSIVE_OPTIMIZATION)]
     internal static ISymbol GetRawSymbol(this SemanticModel model, SyntaxNode node) {
       return node == null ? null : (model.GetSymbolInfo(node).Symbol ?? model.GetDeclaredSymbol(node));
@@ -60,10 +58,6 @@ namespace ZMBA.SyntaxColorizer {
       }
       return node;
     }
-
-
-
-
 
   }
 

@@ -42,112 +42,133 @@ namespace ZMBA.SyntaxColorizer {
   internal class VBCSTagClassifier : ITagger<ClassificationTag> {
     public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 
+
     private readonly FormattingTags Tags;
-    private readonly ITextBuffer Buffer;
+    //private readonly ITextBuffer Buffer;
 
     internal VBCSTagClassifier(IClassificationTypeRegistryService registry, ITextBuffer buffer) {
       this.Tags = new FormattingTags(registry);
-      this.Buffer = buffer;
+      //this.Buffer = buffer;
     }
 
+    //protected virtual void HandleBufferChanged(TextContentChangedEventArgs args) {
+    //  if (args.Changes.Count == 0)
+    //    return;
 
-    [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
-    private static bool LoadSemantics<TS>(TS snapshot, out Workspace ws, out Document doc, out SemanticModel model, out SyntaxNode rootNode) where TS: ITextSnapshot {
-      doc = null;
+    //  var temp = TagsChanged;
+    //  if (temp == null)
+    //    return;
+
+    //  // Combine all changes into a single span so that
+    //  // the ITagger<>.TagsChanged event can be raised just once for a compound edit
+    //  // with many parts.
+
+    //  ITextSnapshot snapshot = args.After;
+
+    //  int start = args.Changes[0].NewPosition;
+    //  int end = args.Changes[args.Changes.Count - 1].NewEnd;
+
+    //  SnapshotSpan totalAffectedSpan = new SnapshotSpan(
+    //      snapshot.GetLineFromPosition(start).Start,
+    //      snapshot.GetLineFromPosition(end).End);
+
+    //  temp(this, new SnapshotSpanEventArgs(totalAffectedSpan));
+    //}
+
+    private static readonly List<ClassifiedSpan> EmptyClassifiedSpansList;   
+    [MethodImpl(AGGRESSIVE_OPTIMIZATION)] private static List<ClassifiedSpan> LoadSemantics(SnapshotSpan snapspan, out SemanticModel model, out SyntaxNode rootNode) {
+      List<ClassifiedSpan> result = EmptyClassifiedSpansList;
       model = null;
       rootNode = null;
+
+      ITextSnapshot snapshot = snapspan.Snapshot;
       SourceTextContainer stc = snapshot.TextBuffer.AsTextContainer();
-      
-      if (!Workspace.TryGetWorkspace(stc, out ws)) { ws = Workspace.GetWorkspaceRegistration(stc).Workspace; }
+      if (!Workspace.TryGetWorkspace(stc, out Workspace ws)) { ws = Workspace.GetWorkspaceRegistration(stc).Workspace; }
+
       if (ws != null) {
         DocumentId docid = ws.GetDocumentIdInCurrentContext(stc);
-        if (docid != null) {
-          doc = ws.CurrentSolution.WithDocumentText(docid, stc.CurrentText, PreservationMode.PreserveIdentity).GetDocument(docid);
+        if (!(docid is null)) {
+          Document doc = ws.CurrentSolution.WithDocumentText(docid, stc.CurrentText, PreservationMode.PreserveIdentity).GetDocument(docid);
           if (doc != null && doc.SupportsSemanticModel) {
             if (!doc.TryGetSemanticModel(out model)) { model = doc.GetSemanticModelAsync().ConfigureAwait(false).GetAwaiter().GetResult(); }
-            if (doc.SupportsSyntaxTree) {
-              if (!model.SyntaxTree.TryGetRoot(out rootNode)) { rootNode = model.SyntaxTree.GetRoot(); }
+            if (model != null) {
+              if (doc.SupportsSyntaxTree) {
+                if (!model.SyntaxTree.TryGetRoot(out rootNode)) { rootNode = model.SyntaxTree.GetRoot(); }
+              }
+              result = (List<ClassifiedSpan>)Classifier.GetClassifiedSpans(model, new TextSpan(snapspan.Start.Position, snapspan.Length), ws); 
             }
-            return model != null;
           }
         }
       }
-      return false;
+      return result;
     }
 
     [MethodImpl(AGGRESSIVE_OPTIMIZATION)]
     public IEnumerable<ITagSpan<ClassificationTag>> GetTags(NormalizedSnapshotSpanCollection snapshots) {
-      for (var i = 0; i < snapshots.Count; i++) {   
-        SnapshotSpan snapspan = snapshots[i];
-        ITextSnapshot snapshot = snapspan.Snapshot;
-        if (LoadSemantics(snapshot, out Workspace ws, out Document doc, out SemanticModel model, out SyntaxNode rootNode)) {
-          List<ClassifiedSpan> spans = (List<ClassifiedSpan>)Classifier.GetClassifiedSpans(model, snapspan.ToTextSpan(), ws);
-          for (var j = 0; j < spans.Count; j++) {
-            ClassifiedSpan span = spans[j];
-            TextSpan txtspan = span.TextSpan;
-            string type = span.ClassificationType;
-            ClassificationTag tag = null;
-            switch (type) {
-              case "string": 
-                tag = ClassifyString(txtspan, rootNode); 
-                break;
-              case "method name": 
-              case "property name":
-              case "identifier": 
-                tag = ClassifyIdentifier(txtspan, model, rootNode);
-                break;
-              case "keyword - control": 
-                tag = ClassifyKeywordControl(txtspan, rootNode);
-                break;
-              case "operator": 
-                tag = ClassifyOperator(txtspan, model, rootNode);
-                break;
-              case "operator - overloaded": 
-                tag = ClassifyOperatorOverloaded(txtspan, model, rootNode);
-                break;
-              case "keyword": tag = Tags.SyntaxKeyword; break;
-              case "event name": tag = Tags.IdentifierEvent; break;
-              case "field name": tag = Tags.IdentifierField; break;
-              case "constant name": tag = Tags.IdentifierConst; break;
-              case "local name": tag = Tags.Variable; break;
-              case "parameter name": tag = Tags.Param; break;
-              case "enum member name": tag = Tags.EnumMember; break;
-              case "extension method name": tag = Tags.MethodExtension; break;
-              case "number": tag = Tags.SyntaxNumber; break;
-              case "punctuation": tag = Tags.SyntaxPunctuation; break;
-              case "comment": tag = Tags.SyntaxComment; break;
-              case "namespace name": tag = Tags.IdentifierNamespace; break;
-              case "class name": tag = Tags.TypeClass; break;
-              case "module name": tag = Tags.TypeModule; break;
-              case "struct name": tag = Tags.TypeStructure; break;
-              case "interface name": tag = Tags.TypeInterface; break;
-              case "type parameter name": tag = Tags.TypeGeneric; break;
-              case "delegate name": tag = Tags.TypeDelegate; break;
-              case "enum name": tag = Tags.Enum; break;
-              case "preprocessor keyword": tag = Tags.Preprocessor; break;
-              case "preprocessor text": tag = Tags.PreprocessorText; break;
-              case "static symbol":
-              //case "xml doc comment": break;
-              //case "xml doc comment - text": break;
-              //case "xml doc comment - name": break;
-              //case "xml doc comment - delimiter": break;
-              //case "xml doc comment - attribute name": break;
-              //case "xml doc comment - attribute value": break;
-              //case "xml doc comment - attribute quotes": break;
-              //case "xml doc comment - entity reference": break;
-              //case "excluded code": break;
-              default:
-#if DEBUG
-                System.Diagnostics.Debugger.Break();
-#endif
-                break;
-            }
-
-            if (tag != null) {
-              yield return new TagSpan<ClassificationTag>(new SnapshotSpan(snapshot, txtspan.Start, txtspan.Length), tag);
-            }
+      for (var i = 0; i < snapshots.Count; ++i) {   
+        ITextSnapshot snapshot = snapshots[i].Snapshot;
+        List<ClassifiedSpan> spans = LoadSemantics(snapshots[i], out SemanticModel model, out SyntaxNode rootNode);
+        for (var j = 0; j < spans.Count; ++j) {
+          ClassifiedSpan span = spans[j];
+          TextSpan txtspan = span.TextSpan;
+          ClassificationTag tag = null;
+          switch (span.ClassificationType) {
+            case "string": 
+              tag = ClassifyString(txtspan, rootNode); 
+              break;
+            case "method name": 
+            case "property name":
+            case "identifier":
+              tag = ClassifyIdentifier(txtspan, model, rootNode);
+              break;
+            case "keyword - control": 
+              tag = ClassifyKeywordControl(txtspan, rootNode);
+              break;
+            case "operator": 
+              tag = ClassifyOperator(txtspan, model, rootNode);
+              break;
+            case "operator - overloaded": 
+              tag = ClassifyOperatorOverloaded(txtspan, model, rootNode);
+              break;
+            case "keyword": tag = Tags.SyntaxKeyword; break;
+            case "event name": tag = Tags.IdentifierEvent; break;
+            case "field name": tag = Tags.IdentifierField; break;
+            case "constant name": tag = Tags.IdentifierConst; break;
+            case "local name": tag = Tags.Variable; break;
+            case "parameter name": tag = Tags.Param; break;
+            case "enum member name": tag = Tags.EnumMember; break;
+            case "extension method name": tag = Tags.MethodExtension; break;
+            case "number": tag = Tags.SyntaxNumber; break;
+            case "punctuation": tag = Tags.SyntaxPunctuation; break;
+            case "comment": tag = Tags.SyntaxComment; break;
+            case "namespace name": tag = Tags.IdentifierNamespace; break;
+            case "class name": tag = Tags.TypeClass; break;
+            case "module name": tag = Tags.TypeModule; break;
+            case "struct name": tag = Tags.TypeStructure; break;
+            case "interface name": tag = Tags.TypeInterface; break;
+            case "type parameter name": tag = Tags.TypeGeneric; break;
+            case "delegate name": tag = Tags.TypeDelegate; break;
+            case "enum name": tag = Tags.Enum; break;
+            case "preprocessor keyword": tag = Tags.Preprocessor; break;
+            case "preprocessor text": tag = Tags.PreprocessorText; break;
+            case "static symbol":
+            //case "xml doc comment": break;
+            //case "xml doc comment - text": break;
+            //case "xml doc comment - name": break;
+            //case "xml doc comment - delimiter": break;
+            //case "xml doc comment - attribute name": break;
+            //case "xml doc comment - attribute value": break;
+            //case "xml doc comment - attribute quotes": break;
+            //case "xml doc comment - entity reference": break;
+            //case "excluded code": break;
+            default:
+              break;
           }
-        }
+
+          if (tag != null) {
+            yield return new TagSpan<ClassificationTag>(new SnapshotSpan(snapshot, txtspan.Start, txtspan.Length), tag);
+          }
+        }        
       }
     }
 
