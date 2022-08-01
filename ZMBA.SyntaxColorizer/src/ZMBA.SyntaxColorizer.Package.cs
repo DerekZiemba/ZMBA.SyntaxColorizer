@@ -1,7 +1,9 @@
 ﻿using System;
+using System.ComponentModel.Composition;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Text.Classification;
 using Task = System.Threading.Tasks.Task;
 
 
@@ -30,9 +32,11 @@ namespace ZMBA.SyntaxColorizer {
     /// <summary>
     /// ZMBA.SyntaxColorizer.VS2019Package GUID string.
     /// </summary>
-    public const string PackageGuidString = "9b2017db-7aa2-4092-9787-cd28b47160e1";
+    //public const string PackageGuidString = "9b2017db-7aa2-4092-9787-cd28b47160e1";
+    public const string PackageGuidString = "e2b98ac0-cc6a-4211-8b5c-d3854e619ad6";
 
     #region Package Members
+    [Import] internal IClassificationTypeRegistryService ClassificationRegistry; // Set via MEF
 
     /// <summary>
     /// Initialization of the package; this method is called right after the package is sited, so this is the place

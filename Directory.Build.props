@@ -1,0 +1,62 @@
+﻿<Project>
+	<PropertyGroup>
+		<MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+		<VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+	</PropertyGroup>
+
+	<PropertyGroup>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <NoWarn>CS0649, CS4014, CS0067</NoWarn>
+    <WarningLevel>4</WarningLevel>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <LangVersion>latestMajor</LangVersion>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+		<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+		<ProjectView>ShowAllFiles</ProjectView>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>full</DebugType>
+		<Optimize>false</Optimize>
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DebugType>pdbonly</DebugType>
+		<Optimize>true</Optimize>
+		<DefineConstants>TRACE</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseEmb|AnyCPU' ">
+		<DebugType>embedded</DebugType>
+		<Optimize>true</Optimize>
+		<DefineConstants>TRACE</DefineConstants>
+	</PropertyGroup>
+
+
+  <PropertyGroup>
+    <OutputFileName>$(MSBuildProjectName).$(TargetFramework)-$(Configuration)</OutputFileName>
+
+    <BaseOutputPath>..\.out\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(BaseOutputPath)obj</BaseIntermediateOutputPath>
+    <PublishDir>$(BaseOutputPath)publish\$(PublishProfileName)</PublishDir>
+    <OutputPath>$(BaseOutputPath)bin\$(OutputFileName)</OutputPath>
+
+    <!--<OutDir>.out\</OutDir>
+    --><!--<BaseIntermediateOutputPath>.out\obj\</BaseIntermediateOutputPath>--><!--
+
+
+    <OutputPath>.out\bin\$(OutputFileName)</OutputPath>
+
+    <OutputAssembly>.out\asm\$(OutputFileName)</OutputAssembly>
+    <BaseIntermediateOutputPath>.out\obj\$(OutputFileName)</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>.out\int\$(OutputFileName)</IntermediateOutputPath>-->
+
+  </PropertyGroup>
+</Project>

@@ -23,12 +23,15 @@
     <None Include="$(MSBuildThisFileDirectory)ZMBA.SyntaxColorizer.ruleset" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\Definitions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\FormattingTags.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\VBCSTagClassifier.Classify.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\VBCSTagClassifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\ZMBA.SyntaxColorizer.Package.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)src\ZMBAFormatDefinition.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Properties\" />
   </ItemGroup>
 </Project>

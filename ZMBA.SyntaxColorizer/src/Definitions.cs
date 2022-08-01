@@ -414,6 +414,7 @@ namespace ZMBA.SyntaxColorizer {
 
           IsBold = true;
           ForegroundColor = Color.FromRgb(198, 176, 206);
+          IsStrikeThrough = true;
         }
       }
     }
@@ -437,6 +438,7 @@ namespace ZMBA.SyntaxColorizer {
 
       private String(string id) : base(id) {
         ForegroundColor = Color.FromRgb(255, 164, 72);
+        IsOverlined = true;
       }
       public String() : this(Key) {
 
@@ -567,6 +569,7 @@ namespace ZMBA.SyntaxColorizer {
 
       private Param(string id) : base(id) {
         ForegroundColor = Color.FromRgb(255, 215, 215);
+        IsItalic = true;
       }
       public Param() : this(Key) {
 
@@ -777,6 +780,7 @@ namespace ZMBA.SyntaxColorizer {
         public Namespace() : base(Key) {
 
           ForegroundColor = Color.FromRgb(135, 150, 194);
+          IsStrikeThrough = true;
         }
       }
 
@@ -863,6 +867,7 @@ namespace ZMBA.SyntaxColorizer {
         }
         public Property() : this(Key) {
 
+          IsBaselined = true;
         }
 
         [Export(typeof(EditorFormatDefinition))]
@@ -901,6 +906,7 @@ namespace ZMBA.SyntaxColorizer {
 
           ForegroundColor = Color.FromRgb(250, 152, 225);
           IsBold = false;
+          IsUnderlined = true;
         }
       }
 
